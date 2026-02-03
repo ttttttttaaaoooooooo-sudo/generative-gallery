@@ -5,45 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAO_PROCESSING - LAYERED STACK</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-<style>
-        /* ...之前的样式保持不变... */
+    <style>
+        /* 全局复位 */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        canvas { display: block; }
 
-        /* 右侧：阶梯堆栈 */
+        /* UI 主容器：固定在屏幕底部 */
+        #ui-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: calc(100% - 40px); /* 留出边距 */
+            height: 0; /* 高度设为0，让子元素向上生长 */
+            z-index: 100;
+            display: flex;
+            align-items: flex-end; /* 底部对齐 */
+            gap: 20px; /* 左右两栏的间距 */
+            pointer-events: none; /* 让鼠标穿透空白区域 */
+        }
+
+        /* 左侧：素材库 */
+        #library {
+            pointer-events: auto;
+            width: 220px; /* 固定宽度 */
+            max-height: 60vh; /* 最大高度占屏幕 60% */
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid #444;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto; /* 内容多了可以滚动 */
+        }
+
+        /* 右侧：阶梯堆栈容器 */
         #stack-container {
             pointer-events: auto;
-            min-width: 220px; /* 稍微加宽一点 */
+            width: 260px; /* 稍微宽一点以容纳长名字 */
             display: flex;
-            flex-direction: column; /* 改回默认方向，我们在JS里控制渲染顺序 */
-            gap: 2px;
+            flex-direction: column;
+            gap: 4px;
         }
 
+        /* 标题样式 */
         .panel-title {
             font-size: 10px;
-            color: #666;
-            margin-bottom: 5px;
+            color: #888;
+            margin-bottom: 8px;
             text-transform: uppercase;
-            border-bottom: 1px solid #333;
-            padding-bottom: 2px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
+            letter-spacing: 1px;
+            background: transparent;
         }
 
-        /* ...之前的按钮样式保持不变... */
-
-        .layer-item {
-            background: rgba(20, 20, 20, 0.9);
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 8px;
+        /* 按钮通用样式 */
+        button {
+            background: transparent;
+            border: 1px solid #333;
+            color: #aaa;
+            padding: 6px 10px;
+            font-family: 'Courier New', monospace;
             font-size: 11px;
-            cursor: grab; /* 鼠标变成抓手 */
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        #library button:hover {
+            border-color: #fff;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 堆栈中的图层项 */
+        .layer-item {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #555;
+            color: #ddd;
+            padding: 8px 10px;
+            font-size: 11px;
+            cursor: grab; /* 抓手光标 */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s, opacity 0.2s;
-            user-select: none; /* 防止拖拽时选中文字 */
+            user-select: none;
+            transition: background 0.2s, border-color 0.2s;
         }
         
         .layer-item:hover {
-            background: #333;
+            background: #222;
+            border-color: #999;
         }
         
         .layer-item:active {
@@ -57,51 +115,57 @@
             background: #000;
         }
 
-        /* 拖拽目标经过时的样式 */
         .layer-item.drag-over {
-            border-top: 2px solid #0f0; /* 绿色指示线 */
+            border-top: 2px solid #0f0; /* 绿色提示线 */
         }
 
-        /* 删除按钮样式优化 */
+        /* 删除按钮 [X] */
         .delete-btn {
             color: #666;
             cursor: pointer;
-            padding: 2px 5px;
+            padding: 2px 6px;
+            font-weight: bold;
         }
         .delete-btn:hover {
-            color: #f00;
-            background: rgba(255,0,0,0.2);
+            color: #f33;
+            background: rgba(255,0,0,0.1);
         }
 
-        /* 透明度视觉提示 */
-        .opacity-high { opacity: 1.0; border-left: 4px solid #fff; }
-        .opacity-mid { opacity: 0.7; border-left: 2px solid #aaa; }
-        .opacity-low { opacity: 0.4; border-left: 1px solid #666; }
+        /* 透明度层级指示器 */
+        .opacity-high { border-left: 3px solid #fff; opacity: 1.0; }
+        .opacity-mid { border-left: 3px solid #aaa; opacity: 0.8; }
+        .opacity-low { border-left: 3px solid #555; opacity: 0.5; }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #444; }
     </style>
 </head>
 <body>
     <div id="ui-container">
         <div id="library">
-            <div class="panel-title">/// MODULE LIBRARY (CLICK TO ADD)</div>
-            <button onclick="addLayer(0)">01. SWARM (ENTROPY)</button>
-            <button onclick="addLayer(1)">02. HARMONICS (DATA SILK)</button>
-            <button onclick="addLayer(2)">03. ORBITAL (TRAIL)</button>
-            <button onclick="addLayer(3)">04. TRI_MESH (NET)</button>
-            <button onclick="addLayer(4)">05. BLUEPRINT (ARCH)</button>
-            <button onclick="addLayer(5)">06. SLIT_SCAN (BAR)</button>
-            <button onclick="addLayer(6)">07. GRID_RUN (BOT)</button>
-            <button onclick="addLayer(7)">08. RADIAL (SONAR)</button>
-            <button onclick="addLayer(8)">09. BINARY (DATA)</button>
-            <button onclick="addLayer(9)">10. NOISE (FIELD)</button>
-            <button onclick="addLayer(10)">11. NEBULA (No-Flicker)</button>
+            <div class="panel-title">/// MODULES</div>
+            <button onclick="addLayer(0)">01. SWARM</button>
+            <button onclick="addLayer(1)">02. HARMONICS</button>
+            <button onclick="addLayer(2)">03. ORBITAL</button>
+            <button onclick="addLayer(3)">04. TRI_MESH</button>
+            <button onclick="addLayer(4)">05. BLUEPRINT</button>
+            <button onclick="addLayer(5)">06. SLIT_SCAN</button>
+            <button onclick="addLayer(6)">07. GRID_RUN</button>
+            <button onclick="addLayer(7)">08. RADIAL</button>
+            <button onclick="addLayer(8)">09. BINARY</button>
+            <button onclick="addLayer(9)">10. NOISE</button>
+            <button onclick="addLayer(10)">11. NEBULA</button>
         </div>
 
         <div id="stack-container">
-            <div class="panel-title" style="background:black; padding:5px;">/// ACTIVE LAYER STACK</div>
+            <div class="panel-title">/// LAYER STACK</div>
             <div id="stack">
                 </div>
         </div>
     </div>
+    
     <script src="sketch.js"></script>
 </body>
 </html>
