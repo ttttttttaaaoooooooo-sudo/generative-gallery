@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAO_PROCESSING - LAYERED SYSTEM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        canvas { display: block; }
+        
+        /* UI 容器 */
+        #ui-container {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: #fff;
+            z-index: 100;
+            display: flex;
+            gap: 40px;
+            pointer-events: none; /* 让鼠标能穿透空白区域 */
+        }
+
+        /* 左侧：素材库 */
+        #library {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* 右侧：阶梯堆栈 */
+        #stack {
+            pointer-events: auto;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column-reverse; /* 让添加的层往上堆叠 */
+            gap: 2px;
+        }
+
+        .panel-title {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+
+        /* 按钮通用样式 */
+        button {
+            background: transparent;
+            border: 1px solid #444;
+            color: #888;
+            padding: 6px 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        /* 素材库按钮 */
+        #library button:hover {
+            border-color: #fff;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* 堆栈图层样式 (阶梯) */
+        .layer-item {
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .layer-item:hover {
+            background: #300; /* 红色警告色，提示删除 */
+            border-color: #f00;
+        }
+
+        /* 视觉上的透明度模拟 */
+        .layer-item.opacity-high { opacity: 1.0; border-left: 4px solid #fff; }
+        .layer-item.opacity-mid { opacity: 0.7; border-left: 2px solid #aaa; }
+        .layer-item.opacity-low { opacity: 0.4; border-left: 1px solid #666; }
+
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <div id="library">
+            <div class="panel-title">/// MODULE LIBRARY (CLICK TO ADD)</div>
+            <button onclick="addLayer(0)">01. SWARM (ENTROPY)</button>
+            <button onclick="addLayer(1)">02. HARMONICS (WAVE)</button>
+            <button onclick="addLayer(2)">03. ORBITAL (TRAIL)</button>
+            <button onclick="addLayer(3)">04. TRI_MESH (NET)</button>
+            <button onclick="addLayer(4)">05. BLUEPRINT (ARCH)</button>
+            <button onclick="addLayer(5)">06. SLIT_SCAN (BAR)</button>
+            <button onclick="addLayer(6)">07. GRID_RUN (BOT)</button>
+            <button onclick="addLayer(7)">08. RADIAL (SONAR)</button>
+            <button onclick="addLayer(8)">09. BINARY (DATA)</button>
+            <button onclick="addLayer(9)">10. NOISE (FIELD)</button>
+        </div>
+
+        <div id="stack-container">
+            <div class="panel-title" style="background:black; padding:5px;">/// ACTIVE LAYER STACK</div>
+            <div id="stack">
+                </div>
+        </div>
+    </div>
+    <script src="sketch.js"></script>
+</body>
+</html>
