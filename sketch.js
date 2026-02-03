@@ -1,7 +1,6 @@
 // ==========================================
 // Title: CONDITIONAL WORKBOOK - ARCHIVE
 // Structure: Scene Manager + 3 Distinct Engines
-// Style: Ryoji Ikeda / Monotone / Data
 // ==========================================
 
 let currentMode = 0; // 0: Swarm, 1: Harmonics, 2: Orbital
@@ -308,5 +307,5 @@ RUNTIME: ${cycleTimer}`;
   
   // 底部版权/装饰
   textAlign(RIGHT, BOTTOM);
-  text("CONDITIONAL_WORKBOOK_V1.0 // RYOJI_STYLE", width-20, height-20);
+  text("Tao_processing", width-20, height-20);
 }
