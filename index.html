@@ -5,47 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAO_PROCESSING - LAYERED STACK</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        canvas { display: block; }
-        
-        /* UI 容器 */
-        #ui-container {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            color: #fff;
-            z-index: 100;
-            display: flex;
-            gap: 40px;
-            pointer-events: none;
-        }
-
-        /* 左侧：素材库 */
-        #library {
-            pointer-events: auto;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #333;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
+<style>
+        /* ...之前的样式保持不变... */
 
         /* 右侧：阶梯堆栈 */
         #stack-container {
             pointer-events: auto;
-            min-width: 200px;
+            min-width: 220px; /* 稍微加宽一点 */
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: column; /* 改回默认方向，我们在JS里控制渲染顺序 */
             gap: 2px;
         }
 
@@ -58,23 +26,7 @@
             padding-bottom: 2px;
         }
 
-        button {
-            background: transparent;
-            border: 1px solid #444;
-            color: #888;
-            padding: 6px 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s;
-        }
-
-        #library button:hover {
-            border-color: #fff;
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-        }
+        /* ...之前的按钮样式保持不变... */
 
         .layer-item {
             background: rgba(20, 20, 20, 0.9);
@@ -82,23 +34,49 @@
             color: #fff;
             padding: 8px;
             font-size: 11px;
-            cursor: pointer;
+            cursor: grab; /* 鼠标变成抓手 */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s;
+            transition: background 0.2s, opacity 0.2s;
+            user-select: none; /* 防止拖拽时选中文字 */
         }
         
         .layer-item:hover {
-            background: #300;
-            border-color: #f00;
+            background: #333;
+        }
+        
+        .layer-item:active {
+            cursor: grabbing;
+        }
+
+        /* 拖拽时的样式 */
+        .layer-item.dragging {
+            opacity: 0.5;
+            border: 1px dashed #fff;
+            background: #000;
+        }
+
+        /* 拖拽目标经过时的样式 */
+        .layer-item.drag-over {
+            border-top: 2px solid #0f0; /* 绿色指示线 */
+        }
+
+        /* 删除按钮样式优化 */
+        .delete-btn {
+            color: #666;
+            cursor: pointer;
+            padding: 2px 5px;
+        }
+        .delete-btn:hover {
+            color: #f00;
+            background: rgba(255,0,0,0.2);
         }
 
         /* 透明度视觉提示 */
         .opacity-high { opacity: 1.0; border-left: 4px solid #fff; }
         .opacity-mid { opacity: 0.7; border-left: 2px solid #aaa; }
         .opacity-low { opacity: 0.4; border-left: 1px solid #666; }
-
     </style>
 </head>
 <body>
