@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONDITIONAL WORKBOOK - ARCHIVE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        canvas { display: block; }
+        
+        /* 悬浮菜单样式 */
+        #ui-layer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: #fff;
+            z-index: 100;
+        }
+        
+        button {
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            padding: 8px 16px;
+            margin-right: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover, button.active {
+            border-color: #fff;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-layer">
+        <button onclick="switchMode(0)" id="btn0" class="active">I. SWARM</button>
+        <button onclick="switchMode(1)" id="btn1">II. HARMONICS</button>
+        <button onclick="switchMode(2)" id="btn2">III. ORBITAL</button>
+    </div>
+    <script src="sketch.js"></script>
+</body>
+</html>
