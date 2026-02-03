@@ -1,7 +1,7 @@
 // ==========================================
 // Title: TAO_PROCESSING - FINAL STACK SYSTEM
 // Architecture: Object-Oriented Mixer
-// Features: 11 Layers, Stack Logic, Data Silk, No-Flicker Nebula
+// Features: 11 Layers, Drag & Drop, 20 Max
 // ==========================================
 
 let activeLayers = []; 
@@ -12,7 +12,7 @@ function setup() {
   rectMode(CENTER);
   textFont('Courier New');
   
-  // 默认添加 Nebula 和 Data Silk，展示最佳效果
+  // 默认添加 Nebula 和 Data Silk，展示最佳初始效果
   addLayer(10); 
   addLayer(1);
 }
@@ -32,8 +32,9 @@ function draw() {
     let alphaMultiplier = 1.0;
     
     if (distanceFromTop > 0) {
-      alphaMultiplier = map(distanceFromTop, 0, 5, 0.6, 0.1); 
-      alphaMultiplier = constrain(alphaMultiplier, 0.1, 0.8);
+      // 衰减公式：层级越深越暗，最低保持 0.1
+      alphaMultiplier = map(distanceFromTop, 0, 10, 0.7, 0.1); 
+      alphaMultiplier = constrain(alphaMultiplier, 0.1, 0.9);
     }
     
     push();
@@ -49,19 +50,21 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// === 图层管理系统 ===
+// ==========================================
+// 图层管理与拖拽系统
+// ==========================================
 
-// 1. 修改最大限制为 20
+// 1. 添加图层
 window.addLayer = function(modeIndex) {
   if (activeLayers.length >= 20) {
-    alert("SYSTEM OVERLOAD: MAX 20 LAYERS ALLOWED");
+    alert("SYSTEM LIMIT REACHED (MAX 20)");
     return;
   }
   
   let newLayer;
   switch(modeIndex) {
     case 0: newLayer = new LayerSwarm(); break;
-    case 1: newLayer = new LayerHarmonics(); break;
+    case 1: newLayer = new LayerHarmonics(); break; // Data Silk
     case 2: newLayer = new LayerOrbital(); break;
     case 3: newLayer = new LayerTriMesh(); break;
     case 4: newLayer = new LayerBlueprint(); break;
@@ -70,88 +73,76 @@ window.addLayer = function(modeIndex) {
     case 7: newLayer = new LayerRadial(); break;
     case 8: newLayer = new LayerBinary(); break;
     case 9: newLayer = new LayerNoise(); break;
-    case 10: newLayer = new LayerNebula(); break;
+    case 10: newLayer = new LayerNebula(); break; // Nebula
   }
   
   newLayer.name = getModeName(modeIndex);
-  activeLayers.push(newLayer); // 添加到数组末尾（也就是视觉上的顶部）
+  activeLayers.push(newLayer); // 添加到数组末尾（视觉顶部）
   updateUI();
 }
 
+// 2. 移除图层
 window.removeLayer = function(index) {
   activeLayers.splice(index, 1);
   updateUI();
 }
 
-// === 核心：拖拽排序 UI 系统 ===
-
-let draggedItemIndex = null; // 记录当前正在被拖拽的图层索引
+// 3. UI 渲染与拖拽逻辑
+let draggedItemIndex = null;
 
 function updateUI() {
   let stackDiv = document.getElementById('stack');
   stackDiv.innerHTML = '';
   
-  // 倒序遍历渲染 HTML
-  // 这样 activeLayers[length-1] (最顶层) 会显示在 HTML 列表的最上面
+  // 倒序遍历：数组末尾（Top Layer）显示在 HTML 列表最上面
   for (let i = activeLayers.length - 1; i >= 0; i--) {
     let layer = activeLayers[i];
     let div = document.createElement('div');
     
-    // 计算视觉样式
+    // 视觉样式计算
     let distanceFromTop = (activeLayers.length - 1) - i;
     let opacityClass = 'opacity-high';
-    if(distanceFromTop === 1) opacityClass = 'opacity-mid';
-    if(distanceFromTop > 1) opacityClass = 'opacity-low';
+    if(distanceFromTop >= 1 && distanceFromTop <= 3) opacityClass = 'opacity-mid';
+    if(distanceFromTop > 3) opacityClass = 'opacity-low';
     
     div.className = `layer-item ${opacityClass}`;
-    div.draggable = true; // 开启拖拽
-    div.dataset.index = i; // 绑定真实的数组索引
+    div.draggable = true;
+    div.dataset.index = i;
     
-    // HTML 内容
     div.innerHTML = `
       <span style="pointer-events:none;">L${i}: ${layer.name}</span> 
       <span class="delete-btn" onclick="event.stopPropagation(); removeLayer(${i})">[X]</span>
     `;
     
-    // === 绑定拖拽事件 ===
-    
-    // 1. 开始拖拽
+    // --- 拖拽事件监听 ---
     div.addEventListener('dragstart', function(e) {
       draggedItemIndex = parseInt(this.dataset.index);
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
     
-    // 2. 拖拽结束
     div.addEventListener('dragend', function(e) {
       this.classList.remove('dragging');
-      // 清除所有 hover 样式
       document.querySelectorAll('.layer-item').forEach(item => item.classList.remove('drag-over'));
       draggedItemIndex = null;
     });
     
-    // 3. 拖拽经过其他元素
     div.addEventListener('dragover', function(e) {
-      e.preventDefault(); // 允许放置
+      e.preventDefault();
       if (parseInt(this.dataset.index) !== draggedItemIndex) {
         this.classList.add('drag-over');
       }
       e.dataTransfer.dropEffect = 'move';
     });
     
-    // 4. 离开元素
     div.addEventListener('dragleave', function(e) {
       this.classList.remove('drag-over');
     });
     
-    // 5. 放置 (Drop) - 核心交换逻辑
     div.addEventListener('drop', function(e) {
-      e.stopPropagation(); // 防止冒泡
+      e.stopPropagation();
       this.classList.remove('drag-over');
-      
       let targetIndex = parseInt(this.dataset.index);
-      
-      // 如果位置变了，执行移动
       if (draggedItemIndex !== null && draggedItemIndex !== targetIndex) {
         moveLayer(draggedItemIndex, targetIndex);
       }
@@ -162,18 +153,10 @@ function updateUI() {
   }
 }
 
-// 数组元素移动辅助函数
 function moveLayer(fromIndex, toIndex) {
-  // 1. 取出要移动的元素
   let itemToMove = activeLayers[fromIndex];
-  
-  // 2. 从原位置删除
   activeLayers.splice(fromIndex, 1);
-  
-  // 3. 插入到新位置
   activeLayers.splice(toIndex, 0, itemToMove);
-  
-  // 4. 刷新 UI
   updateUI();
 }
 
@@ -183,7 +166,7 @@ function getModeName(idx) {
 }
 
 // ============================================================
-// MODE CLASSES
+// MODE CLASSES (视觉引擎)
 // ============================================================
 
 // 01. SWARM
@@ -218,52 +201,38 @@ class LayerSwarm {
   }
 }
 
-// 02. HARMONICS (UPDATED: DATA SILK STYLE)
+// 02. HARMONICS (DATA SILK STYLE)
 class LayerHarmonics {
   constructor() {
     this.lines = [];
     for(let i=0; i<30; i++) {
       this.lines.push({
         baseY: map(i, 0, 30, height*0.15, height*0.85),
-        amp: random(20, 100),
-        phase: random(TWO_PI),
-        speed: random(0.005, 0.02),
-        flowSpeed: random(1, 3),
-        noiseOffset: random(1000),
-        density: floor(random(10, 20))
+        amp: random(20, 100), phase: random(TWO_PI),
+        speed: random(0.005, 0.02), flowSpeed: random(1, 3),
+        noiseOffset: random(1000), density: floor(random(10, 20))
       });
     }
   }
-  update() { /* Logic handled in display loop for optimization */ }
+  update() { }
   display(alphaMult) {
     noFill();
     for(let l of this.lines) {
-      l.phase += l.speed;
-      l.noiseOffset += 0.002;
-      
-      // 幽灵线
-      strokeWeight(1);
-      stroke(255, 15 * alphaMult);
+      l.phase += l.speed; l.noiseOffset += 0.002;
+      strokeWeight(1); stroke(255, 15 * alphaMult);
       beginShape();
       for(let x = 0; x <= width; x += 20) {
         let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
-        let y = l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n);
-        vertex(x, y);
+        vertex(x, l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n));
       }
       endShape();
-
-      // 流动数据点
-      strokeWeight(1.5);
-      stroke(255, 180 * alphaMult);
+      strokeWeight(1.5); stroke(255, 180 * alphaMult);
       let flowShift = (frameCount * l.flowSpeed) % l.density;
       for(let x = flowShift; x <= width; x += l.density) {
         let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
         let y = l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n);
-        if (noise(x * 0.1, frameCount * 0.05) > 0.3) {
-           point(x, y);
-        } else {
-           strokeWeight(0.5); line(x, y - 2, x, y + 2); strokeWeight(1.5);
-        }
+        if (noise(x * 0.1, frameCount * 0.05) > 0.3) point(x, y);
+        else { strokeWeight(0.5); line(x, y - 2, x, y + 2); strokeWeight(1.5); }
       }
     }
   }
@@ -480,17 +449,14 @@ class LayerNoise {
   }
 }
 
-// 11. NEBULA (No-Flicker Style)
+// 11. NEBULA (NO-FLICKER)
 class LayerNebula {
   constructor() {
     this.particles = [];
-    for(let i=0; i<350; i++) this.particles.push(this.createAgent());
-  }
-  createAgent() {
-    return {
+    for(let i=0; i<350; i++) this.particles.push({
       pos: createVector(random(width), random(height)),
       noiseOffset: createVector(random(1000), random(1000))
-    };
+    });
   }
   update() {
     for(let p of this.particles) {
@@ -503,7 +469,6 @@ class LayerNebula {
     }
   }
   display(alphaMult) {
-    // 绘制连线
     strokeWeight(0.5);
     for(let i=0; i<this.particles.length; i++) {
       let a = this.particles[i];
@@ -516,10 +481,7 @@ class LayerNebula {
         }
       }
     }
-    // 绘制十字形
-    stroke(255, 200 * alphaMult);
-    strokeWeight(1);
-    let size = 3;
+    stroke(255, 200 * alphaMult); strokeWeight(1); let size = 3;
     for(let p of this.particles) {
       line(p.pos.x - size, p.pos.y, p.pos.x + size, p.pos.y);
       line(p.pos.x, p.pos.y - size, p.pos.x, p.pos.y + size);
@@ -527,9 +489,9 @@ class LayerNebula {
   }
 }
 
-// ============================================================
-// UI
-// ============================================================
+// ==========================================
+// UI FOOTER
+// ==========================================
 function drawGlobalUI() {
   fill(255); noStroke(); textAlign(RIGHT, BOTTOM); textSize(12);
   let info = "ACTIVE_LAYERS: " + activeLayers.length + " // Tao_processing";
