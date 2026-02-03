@@ -1,7 +1,6 @@
 // ==========================================
-// Title: COSMIC STACK - FINAL PRO EDITION
-// System: Dynamic Layer Stack (Max 20) with Drag & Drop
-// Visuals: Refined Cosmic/Sci-Fi Aesthetics
+// Title: COSMIC STACK - RANDOMIZER EDITION
+// Features: Drag & Drop, Random Generator, Cosmic Visuals
 // ==========================================
 
 let activeLayers = []; 
@@ -12,37 +11,29 @@ function setup() {
   rectMode(CENTER);
   textFont('Courier New');
   
-  // 预设一套超级震撼的初始组合
-  addLayer(9);  // Star Field (背景星空)
-  addLayer(7);  // Cosmic Rings (宇宙环)
-  addLayer(4);  // Deep Struct (深空结构)
-  addLayer(1);  // Data Beams (光束)
+  // 初始加载：为了让用户一进来就感到震撼，我们先随机一次！
+  randomizeStack(); 
 }
 
 function draw() {
   background(0); // 每帧清空背景
   
   // 遍历堆栈进行渲染
-  // index 越大代表越在"上面" (HTML堆栈顶部)，透明度/亮度越高
   for (let i = 0; i < activeLayers.length; i++) {
     let layer = activeLayers[i];
     
-    // 计算层级透明度系数
-    // 堆栈顶部 (activeLayers.length - 1) = 1.0 (最亮)
-    // 往下逐渐变暗，防止爆光
+    // 计算层级透明度 (堆栈顶部最亮)
     let distanceFromTop = (activeLayers.length - 1) - i;
     let alphaMultiplier = 1.0;
     
     if (distanceFromTop > 0) {
-      // 衰减公式：层级越深越暗，最低保持 0.2 以保证背景可见
+      // 衰减公式
       alphaMultiplier = map(distanceFromTop, 0, 10, 0.8, 0.2); 
       alphaMultiplier = constrain(alphaMultiplier, 0.2, 1.0);
     }
     
     push();
-    // 使用 ADD 混合模式，让所有宇宙层级叠加发光！
-    // 如果觉得太亮，可以改回 BLEND
-    blendMode(ADD); 
+    blendMode(ADD); // 宇宙光感叠加
     layer.update();
     layer.display(alphaMultiplier);
     pop();
@@ -56,55 +47,76 @@ function windowResized() {
 }
 
 // ==========================================
-// 图层管理与拖拽系统
+// 🎲 随机化与图层管理系统
 // ==========================================
 
-// 1. 添加图层
-window.addLayer = function(modeIndex) {
+// 随机生成堆栈
+window.randomizeStack = function() {
+  // 1. 清空当前堆栈
+  activeLayers = [];
+  
+  // 2. 决定随机层数 (4 到 12 层之间，太少不好看，太多会卡)
+  let count = floor(random(4, 12));
+  
+  // 3. 循环生成
+  for(let i=0; i<count; i++) {
+    let rMode = floor(random(0, 11)); // 0-10 之间的随机模组ID
+    // 强制把背景类模组 (9. Star Field) 放在底层几率大一点？
+    // 不，让纯粹的随机决定命运吧，这才是生成艺术的魅力。
+    addLayer(rMode, true); // true 代表跳过UI更新，最后统一更新
+  }
+  
+  // 4. 最后统一更新UI
+  updateUI();
+}
+
+// 添加图层 (skipUI 参数用于批量添加时优化性能)
+window.addLayer = function(modeIndex, skipUI = false) {
   if (activeLayers.length >= 20) {
-    alert("SYSTEM LIMIT REACHED (MAX 20)");
+    if(!skipUI) alert("SYSTEM LIMIT REACHED (MAX 20)");
     return;
   }
   
   let newLayer;
   switch(modeIndex) {
     case 0: newLayer = new LayerSwarm(); break;
-    case 1: newLayer = new LayerHarmonics(); break; // Data Beams
+    case 1: newLayer = new LayerHarmonics(); break; 
     case 2: newLayer = new LayerOrbital(); break;
     case 3: newLayer = new LayerTriMesh(); break;
-    case 4: newLayer = new LayerBlueprint(); break; // Deep Struct
-    case 5: newLayer = new LayerSlitScan(); break;  // Digi Aurora
+    case 4: newLayer = new LayerBlueprint(); break; 
+    case 5: newLayer = new LayerSlitScan(); break;  
     case 6: newLayer = new LayerGridRunner(); break;
-    case 7: newLayer = new LayerRadial(); break;    // Cosmic Rings
-    case 8: newLayer = new LayerBinary(); break;    // Data Nebula
-    case 9: newLayer = new LayerNoise(); break;     // Star Field
+    case 7: newLayer = new LayerRadial(); break;    
+    case 8: newLayer = new LayerBinary(); break;    
+    case 9: newLayer = new LayerNoise(); break;     
     case 10: newLayer = new LayerNebula(); break;
   }
   
   newLayer.name = getModeName(modeIndex);
-  activeLayers.push(newLayer); // 添加到数组末尾（视觉顶部）
-  updateUI();
+  activeLayers.push(newLayer); // 添加到数组末尾
+  
+  if(!skipUI) updateUI();
 }
 
-// 2. 移除图层
+// 移除图层
 window.removeLayer = function(index) {
   activeLayers.splice(index, 1);
   updateUI();
 }
 
-// 3. UI 渲染与拖拽逻辑
+// UI 渲染与拖拽逻辑
 let draggedItemIndex = null;
 
 function updateUI() {
   let stackDiv = document.getElementById('stack');
   stackDiv.innerHTML = '';
   
-  // 倒序遍历：数组末尾（Top Layer）显示在 HTML 列表最上面
+  // 倒序遍历显示
   for (let i = activeLayers.length - 1; i >= 0; i--) {
     let layer = activeLayers[i];
     let div = document.createElement('div');
     
-    // 视觉样式计算
+    // 样式
     let distanceFromTop = (activeLayers.length - 1) - i;
     let opacityClass = 'opacity-high';
     if(distanceFromTop >= 1 && distanceFromTop <= 3) opacityClass = 'opacity-mid';
@@ -119,7 +131,7 @@ function updateUI() {
       <span class="delete-btn" onclick="event.stopPropagation(); removeLayer(${i})">[X]</span>
     `;
     
-    // --- 拖拽事件监听 ---
+    // 拖拽事件
     div.addEventListener('dragstart', function(e) {
       draggedItemIndex = parseInt(this.dataset.index);
       this.classList.add('dragging');
@@ -171,7 +183,7 @@ function getModeName(idx) {
 }
 
 // ============================================================
-// VISUAL ENGINES (ALL REFINED COSMIC MODES)
+// VISUAL ENGINES (COSMIC EDITION)
 // ============================================================
 
 // 00. SWARM
@@ -204,7 +216,7 @@ class LayerSwarm {
   }
 }
 
-// 01. DATA BEAMS (REFINED)
+// 01. DATA BEAMS
 class LayerHarmonics {
   constructor() {
     this.beams = [];
@@ -300,7 +312,7 @@ class LayerTriMesh {
   }
 }
 
-// 04. DEEP_STRUCT (REFINED)
+// 04. DEEP_STRUCT
 class LayerBlueprint {
   constructor() {
     this.cons = []; this.traces = [];
@@ -331,7 +343,7 @@ class LayerBlueprint {
   }
 }
 
-// 05. DIGI_AURORA (REFINED)
+// 05. DIGI_AURORA
 class LayerSlitScan {
   constructor() {
     this.cols = floor(width / 4); 
@@ -379,7 +391,7 @@ class LayerGridRunner {
   }
 }
 
-// 07. COSMIC_RINGS (REFINED)
+// 07. COSMIC_RINGS
 class LayerRadial {
   constructor() {
     this.rings = [];
@@ -416,7 +428,7 @@ class LayerRadial {
   }
 }
 
-// 08. DATA_NEBULA (REFINED)
+// 08. DATA_NEBULA
 class LayerBinary {
   constructor() {
     this.stars = [];
@@ -439,7 +451,7 @@ class LayerBinary {
   }
 }
 
-// 09. STAR_FIELD (REFINED)
+// 09. STAR_FIELD
 class LayerNoise {
   constructor() {
     this.dots = [];
