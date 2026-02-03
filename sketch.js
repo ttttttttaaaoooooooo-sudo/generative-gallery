@@ -150,22 +150,79 @@ class LayerSwarm {
   }
 }
 
-// 02. HARMONICS
+// ============================================================
+// 02. HARMONICS (REMASTERED: DATA SILK)
+// 风格：优雅、流动、非实体线条、数据流感
+// ============================================================
 class LayerHarmonics {
   constructor() {
-    this.oscs = [];
-    for(let i=0; i<40; i++) this.oscs.push({
-      y: map(i,0,40,height*0.2,height*0.8),
-      amp: random(20,80), phase: random(TWO_PI), freq: random(0.01,0.03), speed: random(0.02,0.05)
-    });
+    this.lines = [];
+    // 创建 30 层波浪，数量适中以保持优雅
+    for(let i=0; i<30; i++) {
+      this.lines.push({
+        baseY: map(i, 0, 30, height*0.15, height*0.85), // 分布在屏幕垂直方向
+        amp: random(20, 100),       // 振幅
+        phase: random(TWO_PI),      // 初始相位
+        speed: random(0.005, 0.02), // 波浪起伏速度
+        flowSpeed: random(1, 3),    // 数据点横向流动速度
+        noiseOffset: random(1000),  // 噪点偏移，保证每条线形状不同
+        density: floor(random(10, 20)) // 点的间距
+      });
+    }
   }
-  update() { for(let o of this.oscs) o.phase += o.speed; }
+
+  update() {
+    // 逻辑在 display 中一并处理以优化循环
+  }
+
   display(alphaMult) {
-    noFill(); stroke(255, 150 * alphaMult); strokeWeight(1);
-    for(let o of this.oscs) {
+    noFill();
+    
+    for(let l of this.lines) {
+      // 1. 更新参数
+      l.phase += l.speed;      // 上下起伏的节奏
+      l.noiseOffset += 0.002;  // 形状缓慢变形 (模拟水流)
+      
+      // 2. 绘制 "幽灵线" (极淡的背景轨迹，增加层次感)
+      strokeWeight(1);
+      stroke(255, 15 * alphaMult); // 透明度极低 (15/255)
+      
       beginShape();
-      for(let x=0; x<=width; x+=20) vertex(x, o.y + sin(x*o.freq + o.phase)*o.amp);
+      for(let x = 0; x <= width; x += 20) {
+        let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
+        // 结合 Sine (韵律) + Noise (有机)
+        let y = l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n);
+        vertex(x, y);
+      }
       endShape();
+
+      // 3. 绘制 "流动数据点" (视觉主体)
+      // 这些点沿着波浪路径高速移动
+      strokeWeight(1.5);
+      stroke(255, 180 * alphaMult); // 较亮
+      
+      // 计算流动的偏移量
+      let flowShift = (frameCount * l.flowSpeed) % l.density;
+      
+      for(let x = flowShift; x <= width; x += l.density) {
+        // 使用同样的数学公式计算 Y，确保点在线上
+        let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
+        let y = l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n);
+        
+        // [视觉优化] 距离中心越近，点越活跃；边缘则淡出
+        let distFromCenter = abs(width/2 - x);
+        let fade = map(distFromCenter, 0, width/2, 1, 0.2);
+        
+        // 偶尔画点，偶尔画短线，制造 Data Glitch 感
+        if (noise(x * 0.1, frameCount * 0.05) > 0.3) {
+           point(x, y);
+        } else {
+           // 极细的竖线装饰，像 Ryoji Ikeda 的数据雨
+           strokeWeight(0.5);
+           line(x, y - 2, x, y + 2);
+           strokeWeight(1.5);
+        }
+      }
     }
   }
 }
