@@ -51,16 +51,17 @@ function windowResized() {
 
 // === 图层管理系统 ===
 
+// 1. 修改最大限制为 20
 window.addLayer = function(modeIndex) {
-  if (activeLayers.length >= 6) {
-    alert("SYSTEM OVERLOAD: MAX 6 LAYERS ALLOWED");
+  if (activeLayers.length >= 20) {
+    alert("SYSTEM OVERLOAD: MAX 20 LAYERS ALLOWED");
     return;
   }
   
   let newLayer;
   switch(modeIndex) {
     case 0: newLayer = new LayerSwarm(); break;
-    case 1: newLayer = new LayerHarmonics(); break; // 这里是新版 Data Silk
+    case 1: newLayer = new LayerHarmonics(); break;
     case 2: newLayer = new LayerOrbital(); break;
     case 3: newLayer = new LayerTriMesh(); break;
     case 4: newLayer = new LayerBlueprint(); break;
@@ -69,11 +70,11 @@ window.addLayer = function(modeIndex) {
     case 7: newLayer = new LayerRadial(); break;
     case 8: newLayer = new LayerBinary(); break;
     case 9: newLayer = new LayerNoise(); break;
-    case 10: newLayer = new LayerNebula(); break; // 这里是新版 Nebula
+    case 10: newLayer = new LayerNebula(); break;
   }
   
   newLayer.name = getModeName(modeIndex);
-  activeLayers.push(newLayer);
+  activeLayers.push(newLayer); // 添加到数组末尾（也就是视觉上的顶部）
   updateUI();
 }
 
@@ -82,26 +83,98 @@ window.removeLayer = function(index) {
   updateUI();
 }
 
+// === 核心：拖拽排序 UI 系统 ===
+
+let draggedItemIndex = null; // 记录当前正在被拖拽的图层索引
+
 function updateUI() {
   let stackDiv = document.getElementById('stack');
   stackDiv.innerHTML = '';
   
-  // 倒序遍历，让最新的图层显示在 HTML 列表最上方
-  for (let i = 0; i < activeLayers.length; i++) {
+  // 倒序遍历渲染 HTML
+  // 这样 activeLayers[length-1] (最顶层) 会显示在 HTML 列表的最上面
+  for (let i = activeLayers.length - 1; i >= 0; i--) {
     let layer = activeLayers[i];
     let div = document.createElement('div');
     
+    // 计算视觉样式
     let distanceFromTop = (activeLayers.length - 1) - i;
     let opacityClass = 'opacity-high';
     if(distanceFromTop === 1) opacityClass = 'opacity-mid';
     if(distanceFromTop > 1) opacityClass = 'opacity-low';
     
     div.className = `layer-item ${opacityClass}`;
-    div.innerHTML = `<span>L${i}: ${layer.name}</span> <span>[X]</span>`;
-    div.onclick = () => removeLayer(i);
+    div.draggable = true; // 开启拖拽
+    div.dataset.index = i; // 绑定真实的数组索引
+    
+    // HTML 内容
+    div.innerHTML = `
+      <span style="pointer-events:none;">L${i}: ${layer.name}</span> 
+      <span class="delete-btn" onclick="event.stopPropagation(); removeLayer(${i})">[X]</span>
+    `;
+    
+    // === 绑定拖拽事件 ===
+    
+    // 1. 开始拖拽
+    div.addEventListener('dragstart', function(e) {
+      draggedItemIndex = parseInt(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    
+    // 2. 拖拽结束
+    div.addEventListener('dragend', function(e) {
+      this.classList.remove('dragging');
+      // 清除所有 hover 样式
+      document.querySelectorAll('.layer-item').forEach(item => item.classList.remove('drag-over'));
+      draggedItemIndex = null;
+    });
+    
+    // 3. 拖拽经过其他元素
+    div.addEventListener('dragover', function(e) {
+      e.preventDefault(); // 允许放置
+      if (parseInt(this.dataset.index) !== draggedItemIndex) {
+        this.classList.add('drag-over');
+      }
+      e.dataTransfer.dropEffect = 'move';
+    });
+    
+    // 4. 离开元素
+    div.addEventListener('dragleave', function(e) {
+      this.classList.remove('drag-over');
+    });
+    
+    // 5. 放置 (Drop) - 核心交换逻辑
+    div.addEventListener('drop', function(e) {
+      e.stopPropagation(); // 防止冒泡
+      this.classList.remove('drag-over');
+      
+      let targetIndex = parseInt(this.dataset.index);
+      
+      // 如果位置变了，执行移动
+      if (draggedItemIndex !== null && draggedItemIndex !== targetIndex) {
+        moveLayer(draggedItemIndex, targetIndex);
+      }
+      return false;
+    });
     
     stackDiv.appendChild(div);
   }
+}
+
+// 数组元素移动辅助函数
+function moveLayer(fromIndex, toIndex) {
+  // 1. 取出要移动的元素
+  let itemToMove = activeLayers[fromIndex];
+  
+  // 2. 从原位置删除
+  activeLayers.splice(fromIndex, 1);
+  
+  // 3. 插入到新位置
+  activeLayers.splice(toIndex, 0, itemToMove);
+  
+  // 4. 刷新 UI
+  updateUI();
 }
 
 function getModeName(idx) {
