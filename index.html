@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COSMIC STACK - INFINITE SYNTHESIS</title>
+    <title>COSMIC STACK - RANDOMIZER</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
         /* 全局复位 */
@@ -16,13 +16,13 @@
         }
         canvas { display: block; }
 
-        /* UI 主容器：固定在屏幕底部 */
+        /* UI 主容器 */
         #ui-container {
             position: absolute;
             bottom: 20px;
             left: 20px;
             width: calc(100% - 40px);
-            height: 0; /* 让子元素向上生长 */
+            height: 0;
             z-index: 100;
             display: flex;
             align-items: flex-end;
@@ -54,7 +54,6 @@
             gap: 4px;
         }
 
-        /* 标题样式 */
         .panel-title {
             font-size: 10px;
             color: #888;
@@ -82,10 +81,25 @@
             border-color: #fff;
             color: #fff;
             background: rgba(255, 255, 255, 0.15);
-            padding-left: 15px; /* hover 时稍微右移，增加互动感 */
+            padding-left: 15px;
         }
 
-        /* 堆栈中的图层项 */
+        /* 随机按钮特别样式 */
+        #random-btn {
+            border: 1px dashed #f55;
+            color: #f88;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        #random-btn:hover {
+            background: #311;
+            color: #fff;
+            border-color: #f00;
+            padding-left: 10px; /* 居中按钮不需要位移太多 */
+        }
+
+        /* 堆栈图层项 */
         .layer-item {
             background: rgba(20, 20, 20, 0.95);
             border: 1px solid #555;
@@ -106,19 +120,14 @@
             border-color: #fff;
         }
         
-        .layer-item:active {
-            cursor: grabbing;
-        }
+        .layer-item:active { cursor: grabbing; }
 
         .layer-item.dragging {
             opacity: 0.5;
             border: 1px dashed #fff;
             background: #000;
         }
-
-        .layer-item.drag-over {
-            border-top: 2px solid #0f0;
-        }
+        .layer-item.drag-over { border-top: 2px solid #0f0; }
 
         .delete-btn {
             color: #666;
@@ -128,12 +137,10 @@
         }
         .delete-btn:hover { color: #f33; }
 
-        /* 透明度层级指示器 */
         .opacity-high { border-left: 3px solid #fff; opacity: 1.0; }
         .opacity-mid { border-left: 3px solid #aaa; opacity: 0.8; }
         .opacity-low { border-left: 3px solid #555; opacity: 0.6; }
 
-        /* 滚动条 */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #444; }
@@ -143,6 +150,9 @@
     <div id="ui-container">
         <div id="library">
             <div class="panel-title">/// COSMIC MODULES</div>
+            
+            <button id="random-btn" onclick="randomizeStack()">[ 🎲 RANDOMIZE_CHAOS ]</button>
+            
             <button onclick="addLayer(0)">01. SWARM (PHYSICS)</button>
             <button onclick="addLayer(1)">02. DATA BEAMS (L)</button>
             <button onclick="addLayer(2)">03. ORBITAL (PHYSICS)</button>
