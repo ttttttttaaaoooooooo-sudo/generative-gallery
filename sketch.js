@@ -1,7 +1,8 @@
 // ==========================================
-// Title: TAO_PROCESSING - FINAL STACK SYSTEM
+// Title: TAO_PROCESSING - FINAL STACK SYSTEM (PRO EDITION)
 // Architecture: Object-Oriented Mixer
 // Features: 11 Layers, Drag & Drop, 20 Max
+// Updates: Refined Orbital, Harmonics, Radial, Noise
 // ==========================================
 
 let activeLayers = []; 
@@ -12,27 +13,24 @@ function setup() {
   rectMode(CENTER);
   textFont('Courier New');
   
-  // 默认添加 Nebula 和 Data Silk，展示最佳初始效果
-  addLayer(10); 
-  addLayer(1);
+  // 默认加载两个最能体现新效果的层
+  addLayer(10); // Nebula
+  addLayer(2);  // New Orbital
 }
 
 function draw() {
   background(0); // 每帧清空背景
   
   // 遍历堆栈进行渲染
-  // index 越大代表越在"上面" (HTML堆栈顶部)，透明度越高
   for (let i = 0; i < activeLayers.length; i++) {
     let layer = activeLayers[i];
     
     // 计算层级透明度系数
-    // 堆栈顶部 (activeLayers.length - 1) = 1.0 (最亮)
-    // 往下逐渐变暗
+    // 堆栈顶部最亮，往下逐渐变暗
     let distanceFromTop = (activeLayers.length - 1) - i;
     let alphaMultiplier = 1.0;
     
     if (distanceFromTop > 0) {
-      // 衰减公式：层级越深越暗，最低保持 0.1
       alphaMultiplier = map(distanceFromTop, 0, 10, 0.7, 0.1); 
       alphaMultiplier = constrain(alphaMultiplier, 0.1, 0.9);
     }
@@ -54,7 +52,6 @@ function windowResized() {
 // 图层管理与拖拽系统
 // ==========================================
 
-// 1. 添加图层
 window.addLayer = function(modeIndex) {
   if (activeLayers.length >= 20) {
     alert("SYSTEM LIMIT REACHED (MAX 20)");
@@ -64,42 +61,38 @@ window.addLayer = function(modeIndex) {
   let newLayer;
   switch(modeIndex) {
     case 0: newLayer = new LayerSwarm(); break;
-    case 1: newLayer = new LayerHarmonics(); break; // Data Silk
-    case 2: newLayer = new LayerOrbital(); break;
+    case 1: newLayer = new LayerHarmonics(); break; // Refined
+    case 2: newLayer = new LayerOrbital(); break;   // Refined
     case 3: newLayer = new LayerTriMesh(); break;
     case 4: newLayer = new LayerBlueprint(); break;
     case 5: newLayer = new LayerSlitScan(); break;
     case 6: newLayer = new LayerGridRunner(); break;
-    case 7: newLayer = new LayerRadial(); break;
+    case 7: newLayer = new LayerRadial(); break;    // Refined
     case 8: newLayer = new LayerBinary(); break;
-    case 9: newLayer = new LayerNoise(); break;
-    case 10: newLayer = new LayerNebula(); break; // Nebula
+    case 9: newLayer = new LayerNoise(); break;     // Refined
+    case 10: newLayer = new LayerNebula(); break;
   }
   
   newLayer.name = getModeName(modeIndex);
-  activeLayers.push(newLayer); // 添加到数组末尾（视觉顶部）
+  activeLayers.push(newLayer); 
   updateUI();
 }
 
-// 2. 移除图层
 window.removeLayer = function(index) {
   activeLayers.splice(index, 1);
   updateUI();
 }
 
-// 3. UI 渲染与拖拽逻辑
 let draggedItemIndex = null;
 
 function updateUI() {
   let stackDiv = document.getElementById('stack');
   stackDiv.innerHTML = '';
   
-  // 倒序遍历：数组末尾（Top Layer）显示在 HTML 列表最上面
   for (let i = activeLayers.length - 1; i >= 0; i--) {
     let layer = activeLayers[i];
     let div = document.createElement('div');
     
-    // 视觉样式计算
     let distanceFromTop = (activeLayers.length - 1) - i;
     let opacityClass = 'opacity-high';
     if(distanceFromTop >= 1 && distanceFromTop <= 3) opacityClass = 'opacity-mid';
@@ -114,31 +107,24 @@ function updateUI() {
       <span class="delete-btn" onclick="event.stopPropagation(); removeLayer(${i})">[X]</span>
     `;
     
-    // --- 拖拽事件监听 ---
     div.addEventListener('dragstart', function(e) {
       draggedItemIndex = parseInt(this.dataset.index);
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
-    
     div.addEventListener('dragend', function(e) {
       this.classList.remove('dragging');
       document.querySelectorAll('.layer-item').forEach(item => item.classList.remove('drag-over'));
       draggedItemIndex = null;
     });
-    
     div.addEventListener('dragover', function(e) {
       e.preventDefault();
-      if (parseInt(this.dataset.index) !== draggedItemIndex) {
-        this.classList.add('drag-over');
-      }
+      if (parseInt(this.dataset.index) !== draggedItemIndex) this.classList.add('drag-over');
       e.dataTransfer.dropEffect = 'move';
     });
-    
     div.addEventListener('dragleave', function(e) {
       this.classList.remove('drag-over');
     });
-    
     div.addEventListener('drop', function(e) {
       e.stopPropagation();
       this.classList.remove('drag-over');
@@ -166,7 +152,7 @@ function getModeName(idx) {
 }
 
 // ============================================================
-// MODE CLASSES (视觉引擎)
+// MODE CLASSES (VISUAL ENGINES)
 // ============================================================
 
 // 01. SWARM
@@ -201,16 +187,21 @@ class LayerSwarm {
   }
 }
 
-// 02. HARMONICS (DATA SILK STYLE)
+// 02. HARMONICS (REFINED: HIGH-RES SILK)
+// 修改：提高采样率，减少间隙，曲线更加丝滑
 class LayerHarmonics {
   constructor() {
     this.lines = [];
-    for(let i=0; i<30; i++) {
+    // 减少数量，提高质量
+    for(let i=0; i<20; i++) {
       this.lines.push({
-        baseY: map(i, 0, 30, height*0.15, height*0.85),
-        amp: random(20, 100), phase: random(TWO_PI),
-        speed: random(0.005, 0.02), flowSpeed: random(1, 3),
-        noiseOffset: random(1000), density: floor(random(10, 20))
+        baseY: map(i, 0, 20, height*0.1, height*0.9),
+        amp: random(30, 120),
+        phase: random(TWO_PI),
+        speed: random(0.002, 0.01), // 更慢更优雅
+        noiseScale: random(0.002, 0.005),
+        // 粒子间距设为极小，几乎连成线
+        density: 3 
       });
     }
   }
@@ -218,52 +209,92 @@ class LayerHarmonics {
   display(alphaMult) {
     noFill();
     for(let l of this.lines) {
-      l.phase += l.speed; l.noiseOffset += 0.002;
-      strokeWeight(1); stroke(255, 15 * alphaMult);
-      beginShape();
-      for(let x = 0; x <= width; x += 20) {
-        let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
-        vertex(x, l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n));
+      l.phase += l.speed;
+      
+      // 绘制主体流线
+      strokeWeight(1); // 极细
+      stroke(255, 160 * alphaMult);
+      
+      beginShape(POINTS); // 使用 POINTS 但极其密集
+      for(let x = 0; x <= width; x += l.density) {
+        // 复合波形：Sine * Noise
+        let n = noise(x * l.noiseScale, frameCount * 0.005 + l.phase);
+        let sine = sin(x * 0.01 + l.phase);
+        let y = l.baseY + sine * (l.amp * n);
+        
+        // 边缘淡出
+        let fade = 1.0;
+        if(x < 100) fade = map(x, 0, 100, 0, 1);
+        if(x > width-100) fade = map(x, width-100, width, 1, 0);
+        
+        stroke(255, 180 * alphaMult * fade);
+        vertex(x, y);
+        
+        // 偶尔出现的高亮数据节点
+        if (random(1) < 0.001) {
+           strokeWeight(2); stroke(255, 255*alphaMult);
+           point(x, y);
+           strokeWeight(1); stroke(255, 160*alphaMult*fade);
+        }
       }
       endShape();
-      strokeWeight(1.5); stroke(255, 180 * alphaMult);
-      let flowShift = (frameCount * l.flowSpeed) % l.density;
-      for(let x = flowShift; x <= width; x += l.density) {
-        let n = noise(x * 0.003 + l.noiseOffset, frameCount * 0.001);
-        let y = l.baseY + sin(x * 0.005 + l.phase) * (l.amp * n);
-        if (noise(x * 0.1, frameCount * 0.05) > 0.3) point(x, y);
-        else { strokeWeight(0.5); line(x, y - 2, x, y + 2); strokeWeight(1.5); }
-      }
     }
   }
 }
 
-// 03. ORBITAL
+// 03. ORBITAL (REFINED: QUANTUM TRAJECTORIES)
+// 修改：线条极细，无随机抖动，增加粒子云，更规整
 class LayerOrbital {
   constructor() {
     this.agents = [];
-    for(let i=0; i<300; i++) this.agents.push(this.create());
+    // 增加数量，减少尺寸
+    for(let i=0; i<600; i++) this.agents.push(this.create());
   }
   create() {
+    // 严格的量子化角度：0, 45, 90...
+    let angle = floor(random(8)) * (PI/4);
     return {
       pos: createVector(random(width), random(height)),
-      vel: p5.Vector.fromAngle(floor(random(8))*PI/4).mult(random(2,6)),
-      hist: []
+      vel: p5.Vector.fromAngle(angle).mult(random(1, 4)), // 速度适中
+      hist: [],
+      maxHist: random(20, 50)
     };
   }
   update() {
     for(let a of this.agents) {
       a.pos.add(a.vel);
-      if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0;
-      if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0;
+      // 环绕边界
+      if(a.pos.x<0) { a.pos.x=width; a.hist=[]; }
+      if(a.pos.x>width) { a.pos.x=0; a.hist=[]; }
+      if(a.pos.y<0) { a.pos.y=height; a.hist=[]; }
+      if(a.pos.y>height) { a.pos.y=0; a.hist=[]; }
+      
       a.hist.push(a.pos.copy());
-      if(a.hist.length > 20) a.hist.shift();
+      if(a.hist.length > a.maxHist) a.hist.shift();
     }
   }
   display(alphaMult) {
-    noFill(); stroke(255, 200 * alphaMult); strokeWeight(1);
+    noFill(); 
+    strokeWeight(0.5); // 极细线条
+    
     for(let a of this.agents) {
-      beginShape(); for(let v of a.hist) vertex(v.x, v.y); endShape();
+      if(a.hist.length < 2) continue;
+      
+      // 绘制轨迹
+      stroke(255, 150 * alphaMult);
+      beginShape(); 
+      for(let v of a.hist) vertex(v.x, v.y); 
+      endShape();
+      
+      // 绘制头部粒子云 (Dust)
+      stroke(255, 200 * alphaMult);
+      point(a.pos.x, a.pos.y);
+      
+      // 偶尔在头部周围生成微小噪点，增加"云室"感
+      if(random(1) < 0.1) {
+        stroke(255, 80 * alphaMult);
+        point(a.pos.x + random(-2,2), a.pos.y + random(-2,2));
+      }
     }
   }
 }
@@ -389,21 +420,43 @@ class LayerGridRunner {
   }
 }
 
-// 08. RADIAL
+// 08. RADIAL (REFINED: SONAR INTERFERENCE)
+// 修改：具有运动逻辑的同心弧，而非单纯圆圈。支持堆叠干涉。
 class LayerRadial {
-  constructor() { this.circles = []; }
+  constructor() {
+    this.arcs = [];
+    // 初始化一组同心弧
+    for(let i=0; i<15; i++) {
+      this.arcs.push({
+        r: random(100, height), // 半径
+        start: random(TWO_PI),
+        len: random(PI/4, PI), // 弧长
+        speed: random(0.005, 0.02) * (random(1)<0.5 ? 1 : -1), // 转速
+        weight: random(0.5, 2)
+      });
+    }
+  }
   update() {
-    if(frameCount%15===0) this.circles.push({x:random(width), y:random(height), r:0, life:255});
-    for(let i=this.circles.length-1; i>=0; i--) {
-      let c = this.circles[i]; c.r+=2; c.life-=3;
-      if(c.life<=0) this.circles.splice(i,1);
+    for(let a of this.arcs) {
+      a.start += a.speed; // 旋转逻辑
+      // 偶尔改变半径，形成"呼吸"感
+      if(random(1)<0.01) a.r += random(-10, 10);
     }
   }
   display(alphaMult) {
-    noFill(); strokeWeight(1);
-    for(let c of this.circles) {
-      stroke(255, c.life * alphaMult);
-      ellipse(c.x, c.y, c.r, c.r);
+    noFill();
+    strokeCap(SQUARE); // 机械感的线头
+    
+    for(let a of this.arcs) {
+      strokeWeight(a.weight);
+      stroke(255, 120 * alphaMult);
+      arc(width/2, height/2, a.r, a.r, a.start, a.start + a.len);
+      
+      // 偶尔画装饰性的完整细圈
+      if(random(1)<0.05) {
+        strokeWeight(0.5); stroke(255, 50 * alphaMult);
+        ellipse(width/2, height/2, a.r, a.r);
+      }
     }
   }
 }
@@ -432,20 +485,45 @@ class LayerBinary {
   }
 }
 
-// 10. NOISE
+// 10. NOISE (REFINED: FLOW FIELD)
+// 修改：不再是乱爬的虫子，而是顺滑的流场线
 class LayerNoise {
-  constructor() { this.dots = []; for(let i=0; i<1000; i++) this.dots.push(createVector(random(width), random(height))); }
+  constructor() {
+    this.particles = [];
+    for(let i=0; i<1000; i++) {
+      this.particles.push({
+        pos: createVector(random(width), random(height)),
+        prev: createVector(random(width), random(height)),
+        speed: random(2, 5)
+      });
+    }
+  }
   update() {
-    for(let d of this.dots) {
-      let n = noise(d.x*0.005, d.y*0.005, frameCount*0.005);
-      d.add(p5.Vector.fromAngle(n*TWO_PI*4).mult(2));
-      if(d.x<0) d.x=width; if(d.x>width) d.x=0;
-      if(d.y<0) d.y=height; if(d.y>height) d.y=0;
+    for(let p of this.particles) {
+      p.prev = p.pos.copy();
+      
+      // 降低噪声频率，使流动更平缓
+      let angle = noise(p.pos.x * 0.002, p.pos.y * 0.002, frameCount * 0.001) * TWO_PI * 2;
+      let vel = p5.Vector.fromAngle(angle).mult(p.speed);
+      
+      p.pos.add(vel);
+      
+      // 环绕处理，防止线条断裂
+      if(p.pos.x < 0) { p.pos.x = width; p.prev = p.pos.copy(); }
+      if(p.pos.x > width) { p.pos.x = 0; p.prev = p.pos.copy(); }
+      if(p.pos.y < 0) { p.pos.y = height; p.prev = p.pos.copy(); }
+      if(p.pos.y > height) { p.pos.y = 0; p.prev = p.pos.copy(); }
     }
   }
   display(alphaMult) {
-    stroke(255, 100 * alphaMult); strokeWeight(1);
-    for(let d of this.dots) point(d.x, d.y);
+    stroke(255, 80 * alphaMult); 
+    strokeWeight(1);
+    for(let p of this.particles) {
+      // 只画很短的轨迹，形成"雨丝"或"风"的感觉
+      if(p5.Vector.dist(p.pos, p.prev) < 20) {
+        line(p.pos.x, p.pos.y, p.prev.x, p.prev.y);
+      }
+    }
   }
 }
 
