@@ -1,6 +1,6 @@
 // ==========================================
-// Title: COSMIC STACK - VOID PROTOCOL (V2.4)
-// Features: 26 Unique Engines (Including Macro-Wireframe)
+// Title: COSMIC STACK - VOID PROTOCOL (V2.6)
+// Features: 31 Unique Engines (Including Data Flow)
 // ==========================================
 
 let activeLayers = []; 
@@ -8,7 +8,7 @@ let font;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  rectMode(CENTER);
+  rectMode(CENTER); // 确保多边形和矩形基于中心绘制
   textFont('Courier New');
   
   // 初始加载：展示新的漂浮数据效果
@@ -50,14 +50,14 @@ window.randomizeStack = function() {
   activeLayers = [];
   let count = floor(random(5, 12)); 
   for(let i=0; i<count; i++) {
-    let rMode = floor(random(0, 26)); // Range extended to 26
+    let rMode = floor(random(0, 31)); // Range extended to 31
     addLayer(rMode, true);
   }
   updateUI();
 }
 
 window.addLayer = function(modeIndex, skipUI = false) {
-  if (activeLayers.length >= 30) {
+  if (activeLayers.length >= 35) {
     if(!skipUI) alert("SYSTEM LIMIT REACHED");
     return;
   }
@@ -90,10 +90,17 @@ window.addLayer = function(modeIndex, skipUI = false) {
     case 20: newLayer = new LayerNeuralLines(); break;
     case 21: newLayer = new LayerShardTri(); break;
     case 22: newLayer = new LayerSpatialRect(); break;
-    // === 新增：Macro-Wireframe Series ===
+    // Macro-Wireframe Series
     case 23: newLayer = new LayerPureSilk(); break;
     case 24: newLayer = new LayerMacroFrames(); break;
     case 25: newLayer = new LayerCrystalMesh(); break;
+    // Polymorphic Node Weave Series
+    case 26: newLayer = new LayerPolySquare(); break;
+    case 27: newLayer = new LayerPolyTri(); break;
+    case 28: newLayer = new LayerPolyHex(); break;
+    case 29: newLayer = new LayerGlacial(); break;
+    // === 新增：Ryoji Ikeda Data Flow ===
+    case 30: newLayer = new LayerDataFlow(); break;
   }
   
   if(newLayer) {
@@ -144,13 +151,15 @@ function moveLayer(fromIndex, toIndex) {
 
 function getModeName(idx) {
   let names = [
-    "ENTROPIC_SWARM", "DATA_BEAMS", "ORBITAL_DECAY", "NEURAL_GRID", "HYPER_STRUCT", 
-    "DIGI_AURORA", "GRID_RUNNER", "COSMIC_RINGS", "DATA_NEBULA", "DEEP_STARFIELD", "NEBULA_CLUSTER",
-    "NEURAL_LATTICE", "BIO_SURFACE", "FORCE_TENSION", "VOID_CONTACT", 
-    "VOID_PRISM", "VOID_GATE", "VOID_HEX", "VOID_LOCK", "VOID_GLYPH",
-    "NEURAL_LINES", "SHARD_TRI", "SPATIAL_RECTS",
+    "SWARM", "BEAMS", "DECAY", "GRID", "STRUCT", 
+    "AURORA", "GRID_2", "RINGS", "DATA", "STARFIELD", "NEBULA",
+    "LATTICE", "SURFACE", "FORCE", "CONTACT", 
+    "PRISM", "GATE", "HEX", "LOCK", "GLYPH",
+    "LINES", "SHARD", "SPATIAL",
+    "SILK", "MACRO", "MESH",
+    "SQUARES", "SHARP", "HEXAGONS", "GLACIAL",
     // New
-    "PURE_SOFT_SILK", "MACRO_FRAMES", "CRYSTAL_MESH"
+    "DATA_FLOW"
   ];
   return names[idx] || "UNKNOWN";
 }
@@ -430,7 +439,7 @@ class LayerForceTension {
 }
 
 // ============================================================
-// GEOMETRIC CONSTRUCTIVISM SERIES (New Added)
+// GEOMETRIC CONSTRUCTIVISM SERIES
 // ============================================================
 
 // 20. NEURAL LINES
@@ -562,22 +571,17 @@ class LayerSpatialRect {
 }
 
 // ============================================================
-// MACRO-WIREFRAME SERIES (New Added)
-// Based on the 'Macro-Wireframe' Stage 10 Code
+// MACRO-WIREFRAME SERIES
 // ============================================================
 
 // 23. PURE SOFT SILK (Mode 0)
 class LayerPureSilk {
   constructor() {
     this.agents = [];
-    // JS Optimization: 600 -> 250
     for(let i=0; i<250; i++) {
-       this.agents.push({ 
-         pos: createVector(random(width), random(height)), 
-         vel: p5.Vector.random2D().mult(1.2) 
-       });
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2) });
     }
-    this.distThresh = 60; // Slightly adjusted for lower density
+    this.distThresh = 60; 
   }
   update() {
     for(let a of this.agents) {
@@ -587,7 +591,7 @@ class LayerPureSilk {
     }
   }
   display(alphaMult) {
-     stroke(220, 40 * alphaMult); // Higher base alpha for silk
+     stroke(220, 40 * alphaMult); 
      strokeWeight(1);
      for (let i = 0; i < this.agents.length; i++) {
        for (let j = i + 1; j < this.agents.length; j++) {
@@ -604,12 +608,8 @@ class LayerPureSilk {
 class LayerMacroFrames {
   constructor() {
     this.agents = [];
-    // JS Optimization: 450 -> 200
     for(let i=0; i<200; i++) {
-       this.agents.push({ 
-         pos: createVector(random(width), random(height)), 
-         vel: p5.Vector.random2D().mult(1.2) 
-       });
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2) });
     }
     this.distThresh = 90; 
   }
@@ -625,20 +625,15 @@ class LayerMacroFrames {
      for (let i = 0; i < this.agents.length; i++) {
        for (let j = i + 1; j < this.agents.length; j++) {
          let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
-         
          if (d < this.distThresh) {
-           // Layer 1: Base lines (Faint)
            stroke(220, 25 * alphaMult);
            line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
-           
-           // Layer 2: Macro Logic (k = j + 5)
            let k = (j + 5) % this.agents.length;
            let agentK = this.agents[k];
            let d_jk = dist(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
            let d_ki = dist(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
-
            if (d_jk < this.distThresh * 1.2 && d_ki < this.distThresh * 1.2) {
-              stroke(220, 100 * alphaMult); // Stronger lines for frames
+              stroke(220, 100 * alphaMult); 
               line(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
               line(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
            }
@@ -652,12 +647,8 @@ class LayerMacroFrames {
 class LayerCrystalMesh {
   constructor() {
     this.agents = [];
-    // JS Optimization: 600 -> 250
     for(let i=0; i<250; i++) {
-       this.agents.push({ 
-         pos: createVector(random(width), random(height)), 
-         vel: p5.Vector.random2D().mult(1.2) 
-       });
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2) });
     }
     this.distThresh = 60; 
   }
@@ -673,18 +664,13 @@ class LayerCrystalMesh {
      for (let i = 0; i < this.agents.length; i++) {
        for (let j = i + 1; j < this.agents.length; j++) {
          let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
-         
          if (d < this.distThresh) {
-           // Layer 1: Base lines
            stroke(220, 30 * alphaMult);
            line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
-           
-           // Layer 2: Crystal Logic (Dense)
            let k = (j + 5) % this.agents.length;
            let agentK = this.agents[k];
            let d_jk = dist(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
            let d_ki = dist(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
-
            if (d_jk < this.distThresh * 1.2 && d_ki < this.distThresh * 1.2) {
               stroke(220, 80 * alphaMult); 
               line(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
@@ -693,6 +679,331 @@ class LayerCrystalMesh {
          }
        }
      }
+  }
+}
+
+// ============================================================
+// POLYMORPHIC NODE SERIES
+// ============================================================
+
+// 26. DATA SQUARES (Rect Nodes)
+class LayerPolySquare {
+  constructor() {
+    this.agents = [];
+    for(let i=0; i<180; i++) {
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2), r: random(15, 50) });
+    }
+    this.distThresh = 60;
+  }
+  update() {
+    for(let a of this.agents) {
+      a.pos.add(a.vel);
+      if(a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if(a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+    for (let i = 0; i < this.agents.length; i++) {
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+        if (d < this.distThresh) {
+          stroke(220, 30 * alphaMult); strokeWeight(1);
+          line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+          noStroke(); fill(255, 200 * alphaMult);
+          rect(this.agents[i].pos.x, this.agents[i].pos.y, 4, 4);
+          rect(this.agents[j].pos.x, this.agents[j].pos.y, 4, 4);
+        }
+      }
+    }
+  }
+}
+
+// 27. SHARP TRIANGLES (Triangle Nodes)
+class LayerPolyTri {
+  constructor() {
+    this.agents = [];
+    for(let i=0; i<180; i++) {
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2), r: random(15, 50) });
+    }
+    this.distThresh = 65;
+  }
+  update() {
+    for(let a of this.agents) {
+      a.pos.add(a.vel);
+      if(a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if(a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+    for (let i = 0; i < this.agents.length; i++) {
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+        if (d < this.distThresh) {
+          stroke(220, 30 * alphaMult); strokeWeight(1);
+          line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+          noStroke(); fill(255, 200 * alphaMult);
+          this.drawPoly(this.agents[i].pos.x, this.agents[i].pos.y, 3.5, 3);
+          this.drawPoly(this.agents[j].pos.x, this.agents[j].pos.y, 3.5, 3);
+        }
+      }
+    }
+  }
+  drawPoly(x, y, radius, npoints) {
+    let angle = TWO_PI / npoints;
+    let startAngle = (npoints === 3) ? -PI/2 : 0;
+    beginShape();
+    for (let a = startAngle; a < TWO_PI + startAngle; a += angle) {
+      let sx = x + cos(a) * radius;
+      let sy = y + sin(a) * radius;
+      vertex(sx, sy);
+    }
+    endShape(CLOSE);
+  }
+}
+
+// 28. TECH HEXAGONS (Hexagon Nodes)
+class LayerPolyHex {
+  constructor() {
+    this.agents = [];
+    for(let i=0; i<120; i++) { // Slightly less agents for heavy hex visual
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2), r: random(15, 50) });
+    }
+    this.distThresh = 70;
+  }
+  update() {
+    for(let a of this.agents) {
+      a.pos.add(a.vel);
+      if(a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if(a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+    for (let i = 0; i < this.agents.length; i++) {
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+        if (d < this.distThresh) {
+          stroke(220, 25 * alphaMult); strokeWeight(1);
+          line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+          noStroke(); fill(255, 220 * alphaMult);
+          this.drawPoly(this.agents[i].pos.x, this.agents[i].pos.y, 4.0, 6);
+          this.drawPoly(this.agents[j].pos.x, this.agents[j].pos.y, 4.0, 6);
+        }
+      }
+    }
+  }
+  drawPoly(x, y, radius, npoints) {
+    let angle = TWO_PI / npoints;
+    beginShape();
+    for (let a = 0; a < TWO_PI; a += angle) {
+      let sx = x + cos(a) * radius;
+      let sy = y + sin(a) * radius;
+      vertex(sx, sy);
+    }
+    endShape(CLOSE);
+  }
+}
+
+// 29. GLACIAL FACETS (Large Faces)
+class LayerGlacial {
+  constructor() {
+    this.agents = [];
+    for(let i=0; i<150; i++) {
+       this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2), r: random(15, 50) });
+    }
+    this.distThresh = 60;
+  }
+  update() {
+    for(let a of this.agents) {
+      a.pos.add(a.vel);
+      if(a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if(a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+    for (let i = 0; i < this.agents.length; i++) {
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+        if (d < this.distThresh) {
+           // Line
+           stroke(220, 40 * alphaMult); strokeWeight(1);
+           line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+           
+           // Facet Logic
+           let k = (j + 5) % this.agents.length;
+           if (dist(this.agents[j].pos.x, this.agents[j].pos.y, this.agents[k].pos.x, this.agents[k].pos.y) < this.distThresh) {
+              noStroke(); fill(220, 60 * alphaMult);
+              triangle(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y, this.agents[k].pos.x, this.agents[k].pos.y);
+           }
+        }
+      }
+    }
+  }
+}
+
+// ============================================================
+// DATA FLOW SERIES (RYOJI IKEDA STYLE) - New Added
+// ============================================================
+
+// 30. DATA FLOW (RYOJI)
+class LayerDataFlow {
+  constructor() {
+    this.agents = [];
+    this.totalFrames = 7200; // Cycle length
+    this.gridOffsetY = 0;
+    this.gridSpeed = 0.5;
+    
+    // Create fewer agents for web performance (300 instead of 900)
+    for (let i = 0; i < 300; i++) {
+      this.agents.push(new DataAgent());
+    }
+  }
+
+  update() {
+    // Calculate progress within a loop
+    let cycleFrame = frameCount % this.totalFrames;
+    let progress = map(cycleFrame, 0, this.totalFrames, 0, 1);
+    
+    // Phase Logic
+    let phase = 0;
+    if (progress < 0.25) phase = 0;       // Injection
+    else if (progress < 0.60) phase = 1;  // Tension
+    else if (progress < 0.85) phase = 2;  // Glitch
+    else phase = 3;                       // Residual
+
+    // Flowing Grid Logic
+    if (progress < 0.85) this.gridOffsetY += this.gridSpeed + (progress * 2);
+
+    // Update Agents
+    for (let a of this.agents) {
+      a.update(phase, progress);
+    }
+    
+    this.currentPhase = phase;
+    this.currentProgress = progress;
+  }
+
+  display(alphaMult) {
+    let phase = this.currentPhase;
+    let progress = this.currentProgress;
+
+    // 1. Draw Flowing Grid
+    let bgAlpha = (progress > 0.6) ? 10 : 60;
+    fill(0, bgAlpha * alphaMult); 
+    noStroke();
+    rect(width/2, height/2, width, height); // Global Dimmer
+
+    stroke(255, 15 * alphaMult); 
+    strokeWeight(1);
+    let spacing = 50;
+    for (let x = 0; x < width; x += spacing) {
+      line(x, 0, x, height);
+    }
+    for (let y = (this.gridOffsetY % spacing) - spacing; y < height; y += spacing) {
+      line(0, y, width, y);
+    }
+
+    // 2. Draw Agents
+    for (let a of this.agents) {
+      a.display(phase, alphaMult);
+      if (phase < 3) this.connectAgents(a, phase, alphaMult);
+    }
+
+    // 3. Global Glitch Effect (Flash White)
+    if (phase === 2 && random(1) < 0.05) {
+       fill(255, 150 * alphaMult);
+       noStroke();
+       rect(width/2, height/2, width, height);
+       this.gridOffsetY += random(100);
+    }
+    
+    // 4. UI Text (No Progress Bar)
+    fill(255, 255 * alphaMult); noStroke(); textAlign(LEFT, TOP); textSize(12);
+    let status = "";
+    if (phase === 0) status = "SYSTEM: INITIALIZING (INJECTION)";
+    if (phase === 1) status = "SYSTEM: CONNECTING (TENSION)";
+    if (phase === 2) status = "SYSTEM: OVERLOAD (GLITCH)";
+    if (phase === 3) status = "SYSTEM: SHUTTING DOWN (RESIDUAL)";
+    
+    text(status, 20, 20);
+    text("CYCLE_PROG: " + nf(progress*100, 2, 1) + "%", 20, 35);
+  }
+
+  connectAgents(a, phase, alphaMult) {
+    let scanDist = (phase === 1) ? 80 : 50;
+    if (random(1) < 0.7) return; // Optimization
+
+    for (let other of this.agents) {
+      if (a === other) continue;
+      let d = p5.Vector.dist(a.pos, other.pos);
+      
+      if (d < scanDist && d > 1) {
+        let lineAlpha = map(d, 0, scanDist, 200, 20);
+        stroke(255, lineAlpha * a.lifeAlpha * alphaMult);
+        strokeWeight(1);
+        
+        // Manhattan Lines
+        if (random(1) < 0.5) {
+          line(a.pos.x, a.pos.y, other.pos.x, a.pos.y);
+          line(other.pos.x, a.pos.y, other.pos.x, other.pos.y);
+        } else {
+          line(a.pos.x, a.pos.y, a.pos.x, other.pos.y);
+          line(a.pos.x, other.pos.y, other.pos.x, other.pos.y);
+        }
+      }
+    }
+  }
+}
+
+// DataAgent Helper Class
+class DataAgent {
+  constructor() {
+    this.pos = createVector(random(width), random(height));
+    this.targetPos = this.pos.copy();
+    this.speed = random(0.05, 0.2);
+    this.lifeOffset = random(TWO_PI);
+    this.type = floor(random(3)); // 0=Crosshair, 1=Rect, 2=Dot
+    this.lifeAlpha = 0;
+  }
+
+  update(phase, progress) {
+    let breathSpeed = (phase === 2) ? 0.2 : 0.05;
+    this.lifeAlpha = (sin(frameCount * breathSpeed + this.lifeOffset) + 1) / 2;
+    if (phase === 3) this.lifeAlpha *= 0.95;
+
+    // Grid Jump Logic
+    if (frameCount % 60 === 0 && this.lifeAlpha < 0.5 && phase < 3) {
+      let jumpDist = random(20, 100);
+      if (random(1) < 0.5) this.targetPos.x += (random(1)<0.5 ? jumpDist : -jumpDist);
+      else this.targetPos.y += (random(1)<0.5 ? jumpDist : -jumpDist);
+      
+      this.targetPos.x = constrain(this.targetPos.x, 0, width);
+      this.targetPos.y = constrain(this.targetPos.y, 0, height);
+    }
+
+    // Lerp Movement
+    this.pos.lerp(this.targetPos, this.speed);
+    
+    // Glitch Jitter
+    if (phase === 2 && random(1) < 0.1) {
+      this.pos.x += random(-5, 5);
+    }
+  }
+
+  display(phase, alphaMult) {
+    if (phase === 3 && this.lifeAlpha < 0.01) return;
+
+    stroke(255, 255 * this.lifeAlpha * alphaMult);
+    noFill();
+    strokeWeight(1);
+
+    if (this.type === 0) {
+      line(this.pos.x - 3, this.pos.y, this.pos.x + 3, this.pos.y);
+      line(this.pos.x, this.pos.y - 3, this.pos.x, this.pos.y + 3);
+    } else if (this.type === 1) {
+      rect(this.pos.x, this.pos.y, 6, 6);
+    } else {
+      point(this.pos.x, this.pos.y);
+    }
   }
 }
 
