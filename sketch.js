@@ -1,6 +1,6 @@
 // ==========================================
-// Title: COSMIC STACK - VOID PROTOCOL (V2.3)
-// Features: 23 Unique Engines (Including Geo Constructivism)
+// Title: COSMIC STACK - VOID PROTOCOL (V2.4)
+// Features: 26 Unique Engines (Including Macro-Wireframe)
 // ==========================================
 
 let activeLayers = []; 
@@ -50,7 +50,7 @@ window.randomizeStack = function() {
   activeLayers = [];
   let count = floor(random(5, 12)); 
   for(let i=0; i<count; i++) {
-    let rMode = floor(random(0, 23)); // Updated max range to 23
+    let rMode = floor(random(0, 26)); // Range extended to 26
     addLayer(rMode, true);
   }
   updateUI();
@@ -86,10 +86,14 @@ window.addLayer = function(modeIndex, skipUI = false) {
     case 17: newLayer = new LayerVoidHex(); break;       
     case 18: newLayer = new LayerVoidLock(); break;      
     case 19: newLayer = new LayerVoidGlyph(); break;  
-    // === 新增：Geometric Constructivism Series ===
+    // Geometric Constructivism Series
     case 20: newLayer = new LayerNeuralLines(); break;
     case 21: newLayer = new LayerShardTri(); break;
     case 22: newLayer = new LayerSpatialRect(); break;
+    // === 新增：Macro-Wireframe Series ===
+    case 23: newLayer = new LayerPureSilk(); break;
+    case 24: newLayer = new LayerMacroFrames(); break;
+    case 25: newLayer = new LayerCrystalMesh(); break;
   }
   
   if(newLayer) {
@@ -144,14 +148,15 @@ function getModeName(idx) {
     "DIGI_AURORA", "GRID_RUNNER", "COSMIC_RINGS", "DATA_NEBULA", "DEEP_STARFIELD", "NEBULA_CLUSTER",
     "NEURAL_LATTICE", "BIO_SURFACE", "FORCE_TENSION", "VOID_CONTACT", 
     "VOID_PRISM", "VOID_GATE", "VOID_HEX", "VOID_LOCK", "VOID_GLYPH",
+    "NEURAL_LINES", "SHARD_TRI", "SPATIAL_RECTS",
     // New
-    "NEURAL_LINES", "SHARD_TRI", "SPATIAL_RECTS"
+    "PURE_SOFT_SILK", "MACRO_FRAMES", "CRYSTAL_MESH"
   ];
   return names[idx] || "UNKNOWN";
 }
 
 // ============================================================
-// THE VOID SERIES (Advanced)
+// THE VOID SERIES
 // ============================================================
 
 // 14. VOID_CONTACT
@@ -425,7 +430,7 @@ class LayerForceTension {
 }
 
 // ============================================================
-// GEOMETRIC CONSTRUCTIVISM SERIES (NEW ADDITIONS)
+// GEOMETRIC CONSTRUCTIVISM SERIES (New Added)
 // ============================================================
 
 // 20. NEURAL LINES
@@ -553,6 +558,141 @@ class LayerSpatialRect {
       }
     }
     rectMode(CENTER); 
+  }
+}
+
+// ============================================================
+// MACRO-WIREFRAME SERIES (New Added)
+// Based on the 'Macro-Wireframe' Stage 10 Code
+// ============================================================
+
+// 23. PURE SOFT SILK (Mode 0)
+class LayerPureSilk {
+  constructor() {
+    this.agents = [];
+    // JS Optimization: 600 -> 250
+    for(let i=0; i<250; i++) {
+       this.agents.push({ 
+         pos: createVector(random(width), random(height)), 
+         vel: p5.Vector.random2D().mult(1.2) 
+       });
+    }
+    this.distThresh = 60; // Slightly adjusted for lower density
+  }
+  update() {
+    for(let a of this.agents) {
+       a.pos.add(a.vel);
+       if(a.pos.x < 0 || a.pos.x > width) a.vel.x *= -1;
+       if(a.pos.y < 0 || a.pos.y > height) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+     stroke(220, 40 * alphaMult); // Higher base alpha for silk
+     strokeWeight(1);
+     for (let i = 0; i < this.agents.length; i++) {
+       for (let j = i + 1; j < this.agents.length; j++) {
+         let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+         if (d < this.distThresh) {
+           line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+         }
+       }
+     }
+  }
+}
+
+// 24. MACRO FRAMES (Mode 1)
+class LayerMacroFrames {
+  constructor() {
+    this.agents = [];
+    // JS Optimization: 450 -> 200
+    for(let i=0; i<200; i++) {
+       this.agents.push({ 
+         pos: createVector(random(width), random(height)), 
+         vel: p5.Vector.random2D().mult(1.2) 
+       });
+    }
+    this.distThresh = 90; 
+  }
+  update() {
+    for(let a of this.agents) {
+       a.pos.add(a.vel);
+       if(a.pos.x < 0 || a.pos.x > width) a.vel.x *= -1;
+       if(a.pos.y < 0 || a.pos.y > height) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+     strokeWeight(1);
+     for (let i = 0; i < this.agents.length; i++) {
+       for (let j = i + 1; j < this.agents.length; j++) {
+         let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+         
+         if (d < this.distThresh) {
+           // Layer 1: Base lines (Faint)
+           stroke(220, 25 * alphaMult);
+           line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+           
+           // Layer 2: Macro Logic (k = j + 5)
+           let k = (j + 5) % this.agents.length;
+           let agentK = this.agents[k];
+           let d_jk = dist(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
+           let d_ki = dist(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
+
+           if (d_jk < this.distThresh * 1.2 && d_ki < this.distThresh * 1.2) {
+              stroke(220, 100 * alphaMult); // Stronger lines for frames
+              line(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
+              line(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
+           }
+         }
+       }
+     }
+  }
+}
+
+// 25. CRYSTAL MESH (Mode 2)
+class LayerCrystalMesh {
+  constructor() {
+    this.agents = [];
+    // JS Optimization: 600 -> 250
+    for(let i=0; i<250; i++) {
+       this.agents.push({ 
+         pos: createVector(random(width), random(height)), 
+         vel: p5.Vector.random2D().mult(1.2) 
+       });
+    }
+    this.distThresh = 60; 
+  }
+  update() {
+    for(let a of this.agents) {
+       a.pos.add(a.vel);
+       if(a.pos.x < 0 || a.pos.x > width) a.vel.x *= -1;
+       if(a.pos.y < 0 || a.pos.y > height) a.vel.y *= -1;
+    }
+  }
+  display(alphaMult) {
+     strokeWeight(1);
+     for (let i = 0; i < this.agents.length; i++) {
+       for (let j = i + 1; j < this.agents.length; j++) {
+         let d = dist(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+         
+         if (d < this.distThresh) {
+           // Layer 1: Base lines
+           stroke(220, 30 * alphaMult);
+           line(this.agents[i].pos.x, this.agents[i].pos.y, this.agents[j].pos.x, this.agents[j].pos.y);
+           
+           // Layer 2: Crystal Logic (Dense)
+           let k = (j + 5) % this.agents.length;
+           let agentK = this.agents[k];
+           let d_jk = dist(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
+           let d_ki = dist(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
+
+           if (d_jk < this.distThresh * 1.2 && d_ki < this.distThresh * 1.2) {
+              stroke(220, 80 * alphaMult); 
+              line(this.agents[j].pos.x, this.agents[j].pos.y, agentK.pos.x, agentK.pos.y);
+              line(agentK.pos.x, agentK.pos.y, this.agents[i].pos.x, this.agents[i].pos.y);
+           }
+         }
+       }
+     }
   }
 }
 
