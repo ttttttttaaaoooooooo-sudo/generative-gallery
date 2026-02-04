@@ -1,7 +1,7 @@
 // ==========================================
-// Title: COSMIC STACK - VOID PROTOCOL
-// Features: 20 Unique Engines (No Authorship Names)
-// Style: Sci-Fi, Geometric Emergence, Invisible Logic
+// Title: COSMIC STACK - VOID PROTOCOL (V2.2)
+// Features: 20 Unique Engines
+// Update: Refined "STATIC_DATA" to "FLOATING_DATA"
 // ==========================================
 
 let activeLayers = []; 
@@ -12,11 +12,10 @@ function setup() {
   rectMode(CENTER);
   textFont('Courier New');
   
-  // 初始加载：展示新的虚空系列
+  // 初始加载：展示新的漂浮数据效果
   addLayer(9);  // Starfield
-  addLayer(14); // Void Contact (Circle)
-  addLayer(15); // Void Prism (Triangle)
-  addLayer(16); // Void Gate (Rectangle)
+  addLayer(8);  // Floating Data (Modified)
+  addLayer(7);  // Cosmic Rings
 }
 
 function draw() {
@@ -75,20 +74,19 @@ window.addLayer = function(modeIndex, skipUI = false) {
     case 5: newLayer = new LayerSlitScan(); break;  
     case 6: newLayer = new LayerGridRunner(); break;
     case 7: newLayer = new LayerRadial(); break;    
-    case 8: newLayer = new LayerBinary(); break;    
+    case 8: newLayer = new LayerBinary(); break;    // UPDATED: Floating Data
     case 9: newLayer = new LayerNoise(); break;     
     case 10: newLayer = new LayerNebula(); break;
     // 进阶/虚空系列
-    case 11: newLayer = new LayerNeuralLattice(); break; // Old Reas Network
-    case 12: newLayer = new LayerBioSurface(); break;    // Old Reas Tissue
-    case 13: newLayer = new LayerForceTension(); break;  // Old Reas Kinetic
-    case 14: newLayer = new LayerVoidContact(); break;   // Old Reas Sigil (Circle)
-    // 5个新变体
-    case 15: newLayer = new LayerVoidPrism(); break;     // Triangle
-    case 16: newLayer = new LayerVoidGate(); break;      // Rectangle
-    case 17: newLayer = new LayerVoidHex(); break;       // Hexagon
-    case 18: newLayer = new LayerVoidLock(); break;      // Crosshair
-    case 19: newLayer = new LayerVoidGlyph(); break;     // Character
+    case 11: newLayer = new LayerNeuralLattice(); break; 
+    case 12: newLayer = new LayerBioSurface(); break;    
+    case 13: newLayer = new LayerForceTension(); break;  
+    case 14: newLayer = new LayerVoidContact(); break;   
+    case 15: newLayer = new LayerVoidPrism(); break;     
+    case 16: newLayer = new LayerVoidGate(); break;      
+    case 17: newLayer = new LayerVoidHex(); break;       
+    case 18: newLayer = new LayerVoidLock(); break;      
+    case 19: newLayer = new LayerVoidGlyph(); break;     
   }
   
   newLayer.name = getModeName(modeIndex);
@@ -138,7 +136,7 @@ function moveLayer(fromIndex, toIndex) {
 function getModeName(idx) {
   let names = [
     "ENTROPIC_SWARM", "DATA_BEAMS", "ORBITAL_DECAY", "NEURAL_GRID", "HYPER_STRUCT", 
-    "DIGI_AURORA", "GRID_RUNNER", "COSMIC_RINGS", "STATIC_DATA", "DEEP_STARFIELD", "NEBULA_CLUSTER",
+    "DIGI_AURORA", "GRID_RUNNER", "COSMIC_RINGS", "DATA_NEBULA", "DEEP_STARFIELD", "NEBULA_CLUSTER",
     "NEURAL_LATTICE", "BIO_SURFACE", "FORCE_TENSION", "VOID_CONTACT", 
     "VOID_PRISM", "VOID_GATE", "VOID_HEX", "VOID_LOCK", "VOID_GLYPH"
   ];
@@ -146,21 +144,16 @@ function getModeName(idx) {
 }
 
 // ============================================================
-// THE VOID SERIES (Based on Invisible Interactions)
+// THE VOID SERIES (Advanced)
 // ============================================================
 
-// 14. VOID_CONTACT (Original Sigil - Circles)
+// 14. VOID_CONTACT
 class LayerVoidContact {
   constructor() {
     this.agents = [];
     for(let i=0; i<60; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1), r: random(50, 100) });
   }
-  update() {
-    for(let a of this.agents) {
-      a.pos.add(a.vel);
-      if(a.pos.x<0 || a.pos.x>width) a.vel.x*=-1; if(a.pos.y<0 || a.pos.y>height) a.vel.y*=-1;
-    }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0 || a.pos.x>width) a.vel.x*=-1; if(a.pos.y<0 || a.pos.y>height) a.vel.y*=-1; } }
   display(alphaMult) {
     noFill();
     for(let i=0; i<this.agents.length; i++) {
@@ -179,18 +172,13 @@ class LayerVoidContact {
   }
 }
 
-// 15. VOID_PRISM (Triangles - Sharp, Aggressive)
+// 15. VOID_PRISM
 class LayerVoidPrism {
   constructor() {
     this.agents = [];
     for(let i=0; i<50; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.5), r: 120 });
   }
-  update() {
-    for(let a of this.agents) {
-      a.pos.add(a.vel);
-      if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0;
-    }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
   display(alphaMult) {
     noFill();
     for(let i=0; i<this.agents.length; i++) {
@@ -198,71 +186,44 @@ class LayerVoidPrism {
       for(let j=i+1; j<this.agents.length; j++) {
         let b = this.agents[j];
         if(dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y) < a.r) {
-          // 生成一个等腰三角形，指向中心
           let angle = atan2(b.pos.y - a.pos.y, b.pos.x - a.pos.x);
-          let midX = (a.pos.x + b.pos.x) / 2;
-          let midY = (a.pos.y + b.pos.y) / 2;
-          
+          let midX = (a.pos.x + b.pos.x) / 2; let midY = (a.pos.y + b.pos.y) / 2;
           stroke(255, 150 * alphaMult); strokeWeight(1);
-          beginShape();
-          vertex(a.pos.x, a.pos.y);
-          vertex(b.pos.x, b.pos.y);
-          // 第三个点偏离中心，形成棱镜感
-          vertex(midX + cos(angle - HALF_PI) * 40, midY + sin(angle - HALF_PI) * 40);
-          endShape(CLOSE);
+          beginShape(); vertex(a.pos.x, a.pos.y); vertex(b.pos.x, b.pos.y); vertex(midX + cos(angle - HALF_PI) * 40, midY + sin(angle - HALF_PI) * 40); endShape(CLOSE);
         }
       }
     }
   }
 }
 
-// 16. VOID_GATE (Rectangles - Architectural, Scanning)
+// 16. VOID_GATE
 class LayerVoidGate {
   constructor() {
     this.agents = [];
-    for(let i=0; i<40; i++) this.agents.push({ 
-      pos: createVector(random(width), random(height)), 
-      // 只能直线移动
-      vel: (random(1)<0.5) ? createVector(random(1,2),0) : createVector(0, random(1,2)),
-      r: 150 
-    });
+    for(let i=0; i<40; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: (random(1)<0.5) ? createVector(random(1,2),0) : createVector(0, random(1,2)), r: 150 });
   }
-  update() {
-    for(let a of this.agents) {
-      a.pos.add(a.vel);
-      if(a.pos.x<0 || a.pos.x>width) a.vel.x *= -1; if(a.pos.y<0 || a.pos.y>height) a.vel.y *= -1;
-    }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0 || a.pos.x>width) a.vel.x *= -1; if(a.pos.y<0 || a.pos.y>height) a.vel.y *= -1; } }
   display(alphaMult) {
     noFill();
     for(let i=0; i<this.agents.length; i++) {
       let a = this.agents[i];
       for(let j=i+1; j<this.agents.length; j++) {
         let b = this.agents[j];
-        // 矩形检测
         if(abs(a.pos.x - b.pos.x) < 100 && abs(a.pos.y - b.pos.y) < 60) {
-          stroke(255, 120 * alphaMult); strokeWeight(0.5);
-          // 绘制两个点构成的矩形框
-          rectMode(CORNERS);
-          rect(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-          // 加上对角线，增加科技感
-          line(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-          rectMode(CENTER); // 恢复默认
+          stroke(255, 120 * alphaMult); strokeWeight(0.5); rectMode(CORNERS); rect(a.pos.x, a.pos.y, b.pos.x, b.pos.y); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); rectMode(CENTER);
         }
       }
     }
   }
 }
 
-// 17. VOID_HEX (Hexagon - Hive, Shield)
+// 17. VOID_HEX
 class LayerVoidHex {
   constructor() {
     this.agents = [];
     for(let i=0; i<50; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(0.8), r: 100 });
   }
-  update() {
-    for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
   display(alphaMult) {
     noFill();
     for(let i=0; i<this.agents.length; i++) {
@@ -271,83 +232,47 @@ class LayerVoidHex {
         let b = this.agents[j];
         let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
         if(d < 100) {
-          let midX = (a.pos.x + b.pos.x) / 2;
-          let midY = (a.pos.y + b.pos.y) / 2;
-          let size = map(d, 0, 100, 30, 5); // 距离越近，六边形越大
-          
-          stroke(255, 150 * alphaMult); strokeWeight(1);
-          this.drawHex(midX, midY, size);
-          
-          // 连接线
-          stroke(255, 50 * alphaMult);
-          line(a.pos.x, a.pos.y, midX, midY);
-          line(b.pos.x, b.pos.y, midX, midY);
+          let midX = (a.pos.x + b.pos.x) / 2; let midY = (a.pos.y + b.pos.y) / 2; let size = map(d, 0, 100, 30, 5);
+          stroke(255, 150 * alphaMult); strokeWeight(1); this.drawHex(midX, midY, size);
+          stroke(255, 50 * alphaMult); line(a.pos.x, a.pos.y, midX, midY); line(b.pos.x, b.pos.y, midX, midY);
         }
       }
     }
   }
-  drawHex(x, y, r) {
-    beginShape();
-    for(let k=0; k<6; k++) {
-      let angle = PI/3 * k;
-      vertex(x + cos(angle)*r, y + sin(angle)*r);
-    }
-    endShape(CLOSE);
-  }
+  drawHex(x, y, r) { beginShape(); for(let k=0; k<6; k++) { let angle = PI/3 * k; vertex(x + cos(angle)*r, y + sin(angle)*r); } endShape(CLOSE); }
 }
 
-// 18. VOID_LOCK (Targeting - HUD, Crosshair)
+// 18. VOID_LOCK
 class LayerVoidLock {
   constructor() {
     this.agents = [];
     for(let i=0; i<40; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(2) });
   }
-  update() {
-    for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
   display(alphaMult) {
     for(let i=0; i<this.agents.length; i++) {
       let a = this.agents[i];
       for(let j=i+1; j<this.agents.length; j++) {
         let b = this.agents[j];
-        // X轴或Y轴对齐检测 (类似瞄准)
-        let dx = abs(a.pos.x - b.pos.x);
-        let dy = abs(a.pos.y - b.pos.y);
-        
-        if(dx < 5 || dy < 5) { // 如果水平或垂直非常接近
-          let midX = (a.pos.x + b.pos.x) / 2;
-          let midY = (a.pos.y + b.pos.y) / 2;
-          
-          stroke(255, 200 * alphaMult); strokeWeight(1);
-          // 画十字准星
-          line(midX - 20, midY, midX + 20, midY);
-          line(midX, midY - 20, midX, midY + 20);
-          
-          noFill();
-          stroke(255, 100 * alphaMult);
-          // 画旋转的括号
-          let size = 30;
-          let rot = frameCount * 0.1;
-          push(); translate(midX, midY); rotate(rot);
-          arc(0, 0, size, size, 0, HALF_PI);
-          arc(0, 0, size, size, PI, PI + HALF_PI);
-          pop();
+        let dx = abs(a.pos.x - b.pos.x); let dy = abs(a.pos.y - b.pos.y);
+        if(dx < 5 || dy < 5) {
+          let midX = (a.pos.x + b.pos.x) / 2; let midY = (a.pos.y + b.pos.y) / 2;
+          stroke(255, 200 * alphaMult); strokeWeight(1); line(midX - 20, midY, midX + 20, midY); line(midX, midY - 20, midX, midY + 20);
+          noFill(); stroke(255, 100 * alphaMult); let size = 30; let rot = frameCount * 0.1;
+          push(); translate(midX, midY); rotate(rot); arc(0, 0, size, size, 0, HALF_PI); arc(0, 0, size, size, PI, PI + HALF_PI); pop();
         }
       }
     }
   }
 }
 
-// 19. VOID_GLYPH (Data Decoding - Text)
+// 19. VOID_GLYPH
 class LayerVoidGlyph {
   constructor() {
-    this.agents = [];
-    this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\+-=:";
+    this.agents = []; this.chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>/\\+-=:";
     for(let i=0; i<50; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(0.5) });
   }
-  update() {
-    for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; }
-  }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
   display(alphaMult) {
     noStroke(); textAlign(CENTER, CENTER); textSize(10);
     for(let i=0; i<this.agents.length; i++) {
@@ -356,17 +281,9 @@ class LayerVoidGlyph {
         let b = this.agents[j];
         let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
         if(d < 60) {
-          let midX = (a.pos.x + b.pos.x) / 2;
-          let midY = (a.pos.y + b.pos.y) / 2;
-          
-          fill(255, 200 * alphaMult);
-          // 随机闪烁字符
-          let charIndex = floor(noise(frameCount * 0.1 + i + j) * this.chars.length);
-          text(this.chars[charIndex], midX, midY);
-          
-          stroke(255, 40 * alphaMult);
-          line(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-          noStroke();
+          let midX = (a.pos.x + b.pos.x) / 2; let midY = (a.pos.y + b.pos.y) / 2;
+          fill(255, 200 * alphaMult); let charIndex = floor(noise(frameCount * 0.1 + i + j) * this.chars.length); text(this.chars[charIndex], midX, midY);
+          stroke(255, 40 * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); noStroke();
         }
       }
     }
@@ -374,79 +291,7 @@ class LayerVoidGlyph {
 }
 
 // ============================================================
-// RENAMED CLASSIC ENGINES (NO CHANGES TO LOGIC)
-// ============================================================
-
-// 11. NEURAL_LATTICE (Original Network)
-class LayerNeuralLattice {
-  constructor() {
-    this.agents = [];
-    for(let i=0; i<150; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: (random(1)<0.5) ? createVector(random([-2,2]), 0) : createVector(0, random([-2,2])) });
-  }
-  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0 || a.pos.x>width) a.vel.x *= -1; if(a.pos.y<0 || a.pos.y>height) a.vel.y *= -1; } }
-  display(alphaMult) {
-    strokeWeight(0.5);
-    for(let i=0; i<this.agents.length; i++) {
-      let a = this.agents[i];
-      for(let j=i+1; j<this.agents.length; j++) {
-        let b = this.agents[j];
-        let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-        if(d < 100) { stroke(255, map(d, 0, 100, 255, 0) * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); }
-      }
-    }
-  }
-}
-
-// 12. BIO_SURFACE (Original Tissue)
-class LayerBioSurface {
-  constructor() {
-    this.agents = [];
-    for(let i=0; i<100; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(0.5) });
-  }
-  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
-  display(alphaMult) {
-    noStroke(); fill(255, 15 * alphaMult);
-    for(let i=0; i<this.agents.length; i++) {
-      let a = this.agents[i];
-      let neighbors = [];
-      for(let j=0; j<this.agents.length; j++) { if(i===j) continue; if(dist(a.pos.x, a.pos.y, this.agents[j].pos.x, this.agents[j].pos.y) < 80) neighbors.push(this.agents[j].pos); }
-      if(neighbors.length >= 2) triangle(a.pos.x, a.pos.y, neighbors[0].x, neighbors[0].y, neighbors[1].x, neighbors[1].y);
-    }
-  }
-}
-
-// 13. FORCE_TENSION (Original Kinetic)
-class LayerForceTension {
-  constructor() {
-    this.agents = [];
-    for(let i=0; i<120; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: createVector(0,0), acc: createVector(0,0) });
-  }
-  update() {
-    for(let i=0; i<this.agents.length; i++) {
-      let a = this.agents[i];
-      for(let j=0; j<this.agents.length; j++) {
-        if(i===j) continue; let b = this.agents[j]; let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-        if(d < 40 && d > 0) { let force = p5.Vector.sub(a.pos, b.pos); force.normalize(); force.mult(0.5); a.acc.add(force); }
-      }
-      a.acc.add(p5.Vector.random2D().mult(0.1)); a.vel.add(a.acc); a.vel.limit(2); a.pos.add(a.vel); a.acc.mult(0);
-      if(a.pos.x < 0 || a.pos.x > width) a.vel.x *= -1; if(a.pos.y < 0 || a.pos.y > height) a.vel.y *= -1;
-    }
-  }
-  display(alphaMult) {
-    strokeWeight(0.8);
-    for(let i=0; i<this.agents.length; i++) {
-      let a = this.agents[i];
-      for(let j=i+1; j<this.agents.length; j++) {
-        let b = this.agents[j];
-        let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
-        if(d < 60) { stroke(255, map(d, 0, 60, 200, 0) * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); }
-      }
-    }
-  }
-}
-
-// ============================================================
-// BASE ENGINES (0-10)
+// BASE ENGINES (Classic Series)
 // ============================================================
 
 // 00. SWARM
@@ -471,7 +316,7 @@ class LayerOrbital {
   display(alphaMult) { noFill(); strokeWeight(0.5); for(let a of this.agents) { if(a.hist.length < 2) continue; stroke(255, 150 * alphaMult); beginShape(); for(let v of a.hist) vertex(v.x, v.y); endShape(); stroke(255, 200 * alphaMult); point(a.pos.x, a.pos.y); } }
 }
 
-// 03. TRI_MESH
+// 03. NEURAL_GRID
 class LayerTriMesh {
   constructor() { this.nodes = []; for(let i=0; i<400; i++) this.nodes.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(0.3) }); }
   update() { for(let n of this.nodes) { n.pos.add(n.vel); if(n.pos.x<0||n.pos.x>width) n.vel.x*=-1; if(n.pos.y<0||n.pos.y>height) n.vel.y*=-1; } }
@@ -507,11 +352,34 @@ class LayerRadial {
   display(alphaMult) { noFill(); strokeWeight(0.8); translate(width/2, height/2); for(let r of this.rings) { stroke(255, 150 * alphaMult); for(let p of r.particles) { let x = (r.r + p.offsetR) * cos(p.angle); let y = (r.r + p.offsetR) * sin(p.angle); point(x, y); } } }
 }
 
-// 08. STATIC_DATA
+// 08. DATA_NEBULA (UPDATED: Floating Data)
 class LayerBinary {
-  constructor() { this.stars = []; for(let i=0; i<2000; i++) this.stars.push({ x: random(width), y: random(height), char: round(random(1)), offset: random(1000), size: random(8, 12) }); }
-  update() { }
-  display(alphaMult) { noStroke(); textAlign(CENTER, CENTER); for(let s of this.stars) { let flicker = noise(s.offset + frameCount * 0.02); let alpha = map(flicker, 0, 1, 30, 200); fill(255, alpha * alphaMult); textSize(s.size); text(s.char, s.x, s.y); } }
+  constructor() {
+    this.stars = [];
+    for(let i=0; i<2000; i++) {
+      this.stars.push({
+        x: random(width), y: random(height), char: round(random(1)),
+        vx: random(-0.5, 0.5), vy: random(-0.2, 0.8), offset: random(1000), size: random(8, 12)
+      });
+    }
+  }
+  update() {
+    for(let s of this.stars) {
+      s.x += s.vx; s.y += s.vy; s.x += map(noise(s.offset, frameCount*0.01), 0, 1, -0.2, 0.2);
+      if(s.x < 0) s.x = width; if(s.x > width) s.x = 0; if(s.y < 0) s.y = height; if(s.y > height) s.y = 0;
+      if(random(1) < 0.01) s.char = (s.char === 1 ? 0 : 1);
+    }
+  }
+  display(alphaMult) {
+    noStroke(); textAlign(CENTER, CENTER);
+    for(let s of this.stars) {
+      let flicker = noise(s.offset + frameCount * 0.05);
+      if(flicker > 0.3) {
+         let alpha = map(flicker, 0.3, 1, 50, 200);
+         fill(255, alpha * alphaMult); textSize(s.size); text(s.char, s.x, s.y);
+      }
+    }
+  }
 }
 
 // 09. STAR_FIELD
@@ -526,6 +394,27 @@ class LayerNebula {
   constructor() { this.particles = []; for(let i=0; i<350; i++) this.particles.push({ pos: createVector(random(width), random(height)), noiseOffset: createVector(random(1000), random(1000)) }); }
   update() { for(let p of this.particles) { let nX = noise(p.noiseOffset.x + frameCount * 0.003); let nY = noise(p.noiseOffset.y + frameCount * 0.003); let vel = createVector(map(nX, 0, 1, -1.5, 1.5), map(nY, 0, 1, -1.5, 1.5)); p.pos.add(vel); if(p.pos.x < 0) p.pos.x = width; else if(p.pos.x > width) p.pos.x = 0; if(p.pos.y < 0) p.pos.y = height; else if(p.pos.y > height) p.pos.y = 0; } }
   display(alphaMult) { strokeWeight(0.5); for(let i=0; i<this.particles.length; i++) { let a = this.particles[i]; for(let j=i+1; j<this.particles.length; j++) { let b = this.particles[j]; if(p5.Vector.dist(a.pos, b.pos) < 60) { stroke(255, map(p5.Vector.dist(a.pos, b.pos), 0, 60, 180, 20) * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); } } } stroke(255, 200 * alphaMult); strokeWeight(1); let size = 3; for(let p of this.particles) { line(p.pos.x - size, p.pos.y, p.pos.x + size, p.pos.y); line(p.pos.x, p.pos.y - size, p.pos.x, p.pos.y + size); } }
+}
+
+// 11. NEURAL_LATTICE
+class LayerNeuralLattice {
+  constructor() { this.agents = []; for(let i=0; i<150; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: (random(1)<0.5) ? createVector(random([-2,2]), 0) : createVector(0, random([-2,2])) }); }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0 || a.pos.x>width) a.vel.x *= -1; if(a.pos.y<0 || a.pos.y>height) a.vel.y *= -1; } }
+  display(alphaMult) { strokeWeight(0.5); for(let i=0; i<this.agents.length; i++) { let a = this.agents[i]; for(let j=i+1; j<this.agents.length; j++) { let b = this.agents[j]; let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y); if(d < 100) { stroke(255, map(d, 0, 100, 255, 0) * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); } } } }
+}
+
+// 12. BIO_SURFACE
+class LayerBioSurface {
+  constructor() { this.agents = []; for(let i=0; i<100; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(0.5) }); }
+  update() { for(let a of this.agents) { a.pos.add(a.vel); if(a.pos.x<0) a.pos.x=width; if(a.pos.x>width) a.pos.x=0; if(a.pos.y<0) a.pos.y=height; if(a.pos.y>height) a.pos.y=0; } }
+  display(alphaMult) { noStroke(); fill(255, 15 * alphaMult); for(let i=0; i<this.agents.length; i++) { let a = this.agents[i]; let neighbors = []; for(let j=0; j<this.agents.length; j++) { if(i===j) continue; if(dist(a.pos.x, a.pos.y, this.agents[j].pos.x, this.agents[j].pos.y) < 80) neighbors.push(this.agents[j].pos); } if(neighbors.length >= 2) triangle(a.pos.x, a.pos.y, neighbors[0].x, neighbors[0].y, neighbors[1].x, neighbors[1].y); } }
+}
+
+// 13. FORCE_TENSION
+class LayerForceTension {
+  constructor() { this.agents = []; for(let i=0; i<120; i++) this.agents.push({ pos: createVector(random(width), random(height)), vel: createVector(0,0), acc: createVector(0,0) }); }
+  update() { for(let i=0; i<this.agents.length; i++) { let a = this.agents[i]; for(let j=0; j<this.agents.length; j++) { if(i===j) continue; let b = this.agents[j]; let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y); if(d < 40 && d > 0) { let force = p5.Vector.sub(a.pos, b.pos); force.normalize(); force.mult(0.5); a.acc.add(force); } } a.acc.add(p5.Vector.random2D().mult(0.1)); a.vel.add(a.acc); a.vel.limit(2); a.pos.add(a.vel); a.acc.mult(0); if(a.pos.x < 0 || a.pos.x > width) a.vel.x *= -1; if(a.pos.y < 0 || a.pos.y > height) a.vel.y *= -1; } }
+  display(alphaMult) { strokeWeight(0.8); for(let i=0; i<this.agents.length; i++) { let a = this.agents[i]; for(let j=i+1; j<this.agents.length; j++) { let b = this.agents[j]; let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y); if(d < 60) { stroke(255, map(d, 0, 60, 200, 0) * alphaMult); line(a.pos.x, a.pos.y, b.pos.x, b.pos.y); } } } }
 }
 
 // ==========================================
