@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COSMIC STACK - PROCESS SERIES</title>
+    <title>COSMIC STACK - VOID PROTOCOL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
         /* 全局复位 */
@@ -33,16 +33,16 @@
         /* 左侧：素材库 */
         #library {
             pointer-events: auto;
-            width: 260px; /* 稍微加宽以容纳新名字 */
-            max-height: 65vh;
-            background: rgba(0, 0, 0, 0.9);
+            width: 260px;
+            max-height: 70vh; /* 稍微加高以容纳20个按钮 */
+            background: rgba(0, 0, 0, 0.92);
             border: 1px solid #444;
             padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
             overflow-y: auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
         /* 右侧：阶梯堆栈容器 */
@@ -56,21 +56,22 @@
 
         .panel-title {
             font-size: 10px;
-            color: #888;
+            color: #666;
             margin-bottom: 8px;
             text-transform: uppercase;
             border-bottom: 1px solid #444;
             padding-bottom: 4px;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-weight: bold;
         }
 
         button {
             background: transparent;
-            border: 1px solid #333;
-            color: #aaa;
-            padding: 8px 10px;
+            border: 1px solid #222; /* 更深色的边框，让列表看起来更一体 */
+            color: #999;
+            padding: 6px 10px;
             font-family: 'Courier New', monospace;
-            font-size: 10px; /*稍微调小字体以容纳更多按钮*/
+            font-size: 10px;
             cursor: pointer;
             text-align: left;
             transition: all 0.2s;
@@ -79,28 +80,28 @@
         #library button:hover {
             border-color: #fff;
             color: #fff;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
             padding-left: 15px;
         }
 
         #random-btn {
-            border: 1px dashed #f55;
-            color: #f88;
+            border: 1px dashed #f44;
+            color: #f44;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             font-weight: bold;
             font-size: 11px;
+            padding: 10px;
         }
         #random-btn:hover {
-            background: #311;
+            background: #200;
             color: #fff;
             border-color: #f00;
-            padding-left: 10px;
         }
 
         /* 堆栈图层项 */
         .layer-item {
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(10, 10, 10, 0.95);
             border: 1px solid #555;
             color: #ddd;
             padding: 8px 10px;
@@ -111,7 +112,7 @@
             align-items: center;
             user-select: none;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
         
         .layer-item:hover { background: #222; border-color: #fff; }
@@ -134,33 +135,29 @@
 <body>
     <div id="ui-container">
         <div id="library">
-            <div class="panel-title">/// COSMIC MODULES</div>
+            <div class="panel-title">/// SYSTEM MODULES</div>
             
             <button id="random-btn" onclick="randomizeStack()">[ 🎲 RANDOMIZE_CHAOS ]</button>
             
-            <div class="panel-title" style="margin-top:10px;">-- CLASSIC SERIES --</div>
-            <button onclick="addLayer(0)">01. SWARM (PHYSICS)</button>
-            <button onclick="addLayer(1)">02. DATA BEAMS (L)</button>
-            <button onclick="addLayer(2)">03. ORBITAL (PHYSICS)</button>
-            <button onclick="addLayer(3)">04. TRI MESH (NET)</button>
-            <button onclick="addLayer(4)">05. DEEP STRUCT (ARCH)</button>
-            <button onclick="addLayer(5)">06. DIGI AURORA (SCAN)</button>
-            <button onclick="addLayer(6)">07. GRID RUNNER (BOT)</button>
-            <button onclick="addLayer(7)">08. COSMIC RINGS (SYS)</button>
-            <button onclick="addLayer(8)">09. DATA NEBULA (VOID)</button>
-            <button onclick="addLayer(9)">10. STAR FIELD (BG)</button>
-            <button onclick="addLayer(10)">11. NEBULA (CLUTSTER)</button>
+            <button onclick="addLayer(0)">01. ENTROPIC SWARM</button>
+            <button onclick="addLayer(1)">02. DATA BEAMS</button>
+            <button onclick="addLayer(2)">03. ORBITAL DECAY</button>
+            <button onclick="addLayer(3)">04. NEURAL GRID</button> <button onclick="addLayer(4)">05. HYPER STRUCTURE</button> <button onclick="addLayer(5)">06. DIGITAL AURORA</button>
+            <button onclick="addLayer(6)">07. GRID RUNNER</button>
+            <button onclick="addLayer(7)">08. COSMIC RINGS</button>
+            <button onclick="addLayer(8)">09. STATIC DATA</button>
+            <button onclick="addLayer(9)">10. DEEP STARFIELD</button>
+            <button onclick="addLayer(10)">11. NEBULA CLUSTER</button>
             
-            <div class="panel-title" style="margin-top:10px;">-- REAS PROCESS SERIES --</div>
-            <button onclick="addLayer(11)">12. REAS NETWORK (P4)</button>
-            <button onclick="addLayer(12)">13. REAS TISSUE (SKIN)</button>
-            <button onclick="addLayer(13)">14. REAS SIGIL (CONTACT)</button>
-            <button onclick="addLayer(14)">15. REAS PATH (FLOW)</button>
-            <button onclick="addLayer(15)">16. REAS KINETIC (FORCE)</button>
+            <button onclick="addLayer(11)">12. NEURAL LATTICE</button> <button onclick="addLayer(12)">13. BIO SURFACE</button>   <button onclick="addLayer(13)">14. FORCE TENSION</button> <button onclick="addLayer(14)">15. VOID CONTACT</button>  <button onclick="addLayer(15)">16. VOID PRISM (TRI)</button>
+            <button onclick="addLayer(16)">17. VOID GATE (RECT)</button>
+            <button onclick="addLayer(17)">18. VOID HEX (HIVE)</button>
+            <button onclick="addLayer(18)">19. VOID LOCK (HUD)</button>
+            <button onclick="addLayer(19)">20. VOID GLYPH (CODE)</button>
         </div>
 
         <div id="stack-container">
-            <div class="panel-title">/// LAYER STACK (DRAG TO SORT)</div>
+            <div class="panel-title">/// ACTIVE STACK</div>
             <div id="stack">
                 </div>
         </div>
