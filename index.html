@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMIC STACK - VOID PROTOCOL V2.6 (Mobile Optimized)</title>
+    <title>COSMIC STACK - VOID PROTOCOL V2.7 (Universal UI)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
         /* 全局复位 */
@@ -13,13 +13,12 @@
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
-            /* 禁止移动端长按选中文本 */
             -webkit-user-select: none;
             user-select: none;
         }
         canvas { display: block; }
 
-        /* UI 主容器 - 桌面版保持原样 */
+        /* UI 主容器 */
         #ui-container {
             position: absolute;
             bottom: 20px;
@@ -29,36 +28,85 @@
             z-index: 100;
             display: flex;
             align-items: flex-end;
+            /* 桌面端：左侧库在左，右侧堆栈在右，中间留空 */
+            justify-content: space-between; 
             gap: 20px;
             pointer-events: none;
         }
 
-        /* 左侧：素材库 */
-        #library {
+        /* 通用面板样式 */
+        #library, #stack-container {
             pointer-events: auto;
-            width: 260px;
-            max-height: 70vh; 
             background: rgba(0, 0, 0, 0.92);
             border: 1px solid #444;
             padding: 10px;
             display: flex;
             flex-direction: column;
             gap: 3px;
-            overflow-y: auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            
+            /* 动画过渡 */
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 左侧：素材库 */
+        #library {
+            width: 260px;
+            max-height: 70vh; 
+            overflow-y: auto;
         }
 
         /* 右侧：阶梯堆栈容器 */
         #stack-container {
-            pointer-events: auto;
             width: 280px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
+        /* === 桌面端隐藏状态 === */
+        /* 当 body 拥有 .ui-hidden 类时，隐藏面板 */
+        body.ui-hidden #library, 
+        body.ui-hidden #stack-container {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        /* 主控按钮 (PC & Mobile 通用) */
+        #master-toggle-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            pointer-events: auto;
+            
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+        }
+
+        #master-toggle-btn:hover {
+            background: #222;
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        /* 按钮激活态（红色警告色） */
+        #master-toggle-btn.active {
+            border-color: #f44;
+            color: #f44;
+            background: rgba(20, 0, 0, 0.9);
+        }
+
+        /* --- 内部元素样式 --- */
         .panel-title {
             font-size: 10px;
             color: #666;
@@ -115,6 +163,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            user-select: none;
             transition: all 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
@@ -131,48 +180,40 @@
         .opacity-mid { border-left: 3px solid #aaa; opacity: 0.8; }
         .opacity-low { border-left: 3px solid #555; opacity: 0.6; }
 
-        /* 移动端控制按钮 (默认隐藏) */
-        #mobile-toggle-btn {
-            display: none;
-            pointer-events: auto;
-            background: #000;
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 12px 20px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
-            z-index: 200;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #444; }
 
         /* =========================================
-           📱 iPhone / Mobile Media Query (核心修改)
+           📱 Mobile / iPhone Media Query
            ========================================= */
         @media (max-width: 768px) {
             #ui-container {
-                /* 改为纵向布局，并靠下对齐 */
-                flex-direction: column-reverse;
+                flex-direction: column-reverse; /* 纵向排列 */
+                justify-content: flex-start;
                 align-items: center;
                 left: 0;
-                bottom: 10px; /* 留出底部安全区 */
+                bottom: 10px; 
                 width: 100%;
                 gap: 10px;
             }
 
-            /* 显示控制按钮 */
-            #mobile-toggle-btn {
-                display: block;
-                width: 90%; /* 按钮宽一点方便按 */
-                text-align: center;
-                background: rgba(0,0,0,0.8);
-                backdrop-filter: blur(5px);
+            /* 移动端主按钮位置调整 */
+            #master-toggle-btn {
+                position: relative; /* 不再绝对定位，而是放入流中 */
+                bottom: auto;
+                left: auto;
+                transform: none;
+                width: 90%;
+                margin-bottom: 5px;
+                padding: 12px;
+                font-size: 12px;
             }
 
-            /* 默认隐藏面板，通过 active 类显示 */
+            /* 移动端默认状态：收起 (模拟 hidden) */
             #library, #stack-container {
-                width: 90%; /* 宽度占满屏幕 */
-                max-height: 0; /* 默认收起 */
+                width: 90%; 
+                max-height: 0; 
                 overflow: hidden;
                 padding: 0;
                 border: none;
@@ -180,37 +221,26 @@
                 pointer-events: none;
             }
 
-            /* 当添加 .active 类时展开面板 */
-            #library.active, #stack-container.active {
-                max-height: 40vh; /* 各占屏幕高度的 40% */
+            /* 移动端激活状态 (通过 .mobile-active 类控制) */
+            body.mobile-active #library, 
+            body.mobile-active #stack-container {
+                max-height: 40vh; 
                 padding: 10px;
                 border: 1px solid #444;
                 opacity: 1;
                 pointer-events: auto;
                 overflow-y: auto;
             }
-
-            /* 增大手机上的按钮尺寸，防止误触 */
-            button {
-                padding: 12px 10px;
-                font-size: 12px;
-                margin-bottom: 2px;
-            }
             
-            .layer-item {
-                padding: 12px 10px;
-            }
+            button { padding: 12px 10px; font-size: 12px; margin-bottom: 2px; }
+            .layer-item { padding: 12px 10px; }
         }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #444; }
     </style>
 </head>
 <body>
-    <div id="ui-container">
-        <button id="mobile-toggle-btn" onclick="toggleMobileMenu()">/// OPEN CONSOLE ///</button>
+    <button id="master-toggle-btn" onclick="toggleConsole()">[ - ] HIDE CONSOLE</button>
 
+    <div id="ui-container">
         <div id="library">
             <div class="panel-title">/// SYSTEM MODULES</div>
             
@@ -264,24 +294,43 @@
     <script src="sketch.js"></script>
 
     <script>
-        function toggleMobileMenu() {
-            const lib = document.getElementById('library');
-            const stack = document.getElementById('stack-container');
-            const btn = document.getElementById('mobile-toggle-btn');
-            
-            // 切换 active 类
-            lib.classList.toggle('active');
-            stack.classList.toggle('active');
-            
-            // 更改按钮文字
-            if (lib.classList.contains('active')) {
-                btn.innerHTML = "[ X ] CLOSE CONSOLE";
-                btn.style.borderColor = "#f00";
-                btn.style.color = "#f00";
+        // 检测是否是移动端
+        const isMobile = window.innerWidth <= 768;
+        const btn = document.getElementById('master-toggle-btn');
+        const body = document.body;
+
+        // 初始化状态
+        if (isMobile) {
+            // 移动端默认：收起 (Console Closed)
+            btn.innerHTML = "/// OPEN CONSOLE ///";
+        } else {
+            // PC端默认：展开 (Console Open)
+            btn.innerHTML = "[ - ] HIDE CONSOLE";
+        }
+
+        function toggleConsole() {
+            if (window.innerWidth <= 768) {
+                // === 移动端逻辑 (toggle .mobile-active) ===
+                body.classList.toggle('mobile-active');
+                
+                if (body.classList.contains('mobile-active')) {
+                    btn.innerHTML = "[ X ] CLOSE CONSOLE";
+                    btn.classList.add('active');
+                } else {
+                    btn.innerHTML = "/// OPEN CONSOLE ///";
+                    btn.classList.remove('active');
+                }
             } else {
-                btn.innerHTML = "/// OPEN CONSOLE ///";
-                btn.style.borderColor = "#fff";
-                btn.style.color = "#fff";
+                // === PC端逻辑 (toggle .ui-hidden) ===
+                body.classList.toggle('ui-hidden');
+                
+                if (body.classList.contains('ui-hidden')) {
+                    btn.innerHTML = "/// OPEN CONSOLE ///";
+                    btn.classList.add('active'); // 隐藏时按钮变红，提示可点开
+                } else {
+                    btn.innerHTML = "[ - ] HIDE CONSOLE";
+                    btn.classList.remove('active');
+                }
             }
         }
     </script>
