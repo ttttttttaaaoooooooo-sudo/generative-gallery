@@ -3,38 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMIC STACK - VOID PROTOCOL V2.7 (Universal UI)</title>
+    <title>COSMIC STACK - VOID PROTOCOL V2.8 (Mobile Fix)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
-        /* 全局复位 */
+        /* --- 基础设置 --- */
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
-            -webkit-user-select: none;
+            -webkit-user-select: none; /* iOS 防长按选中 */
             user-select: none;
+            -webkit-tap-highlight-color: transparent; /* 去除点击高亮 */
         }
         canvas { display: block; }
 
-        /* UI 主容器 */
+        /* --- 桌面端布局 (保持原样) --- */
         #ui-container {
             position: absolute;
             bottom: 20px;
             left: 20px;
             width: calc(100% - 40px);
-            height: 0;
+            height: 0; /* 桌面端依靠 overflow 向上生长 */
             z-index: 100;
             display: flex;
             align-items: flex-end;
-            /* 桌面端：左侧库在左，右侧堆栈在右，中间留空 */
             justify-content: space-between; 
             gap: 20px;
             pointer-events: none;
         }
 
-        /* 通用面板样式 */
         #library, #stack-container {
             pointer-events: auto;
             background: rgba(0, 0, 0, 0.92);
@@ -44,27 +43,20 @@
             flex-direction: column;
             gap: 3px;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            
-            /* 动画过渡 */
-            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-            opacity: 1;
-            transform: translateY(0);
+            transition: all 0.3s ease;
         }
 
-        /* 左侧：素材库 */
         #library {
             width: 260px;
             max-height: 70vh; 
             overflow-y: auto;
         }
 
-        /* 右侧：阶梯堆栈容器 */
         #stack-container {
             width: 280px;
         }
 
-        /* === 桌面端隐藏状态 === */
-        /* 当 body 拥有 .ui-hidden 类时，隐藏面板 */
+        /* 桌面端隐藏状态 */
         body.ui-hidden #library, 
         body.ui-hidden #stack-container {
             opacity: 0;
@@ -72,41 +64,33 @@
             pointer-events: none;
         }
 
-        /* 主控按钮 (PC & Mobile 通用) */
+        /* --- 按钮样式 --- */
         #master-toggle-btn {
-            position: absolute;
+            position: fixed; /* 改为 fixed 确保始终可见 */
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 200;
             pointer-events: auto;
-            
             background: rgba(0, 0, 0, 0.8);
             border: 1px solid #fff;
             color: #fff;
             padding: 10px 20px;
             font-family: 'Courier New', monospace;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
-            letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.3s;
             backdrop-filter: blur(4px);
+            white-space: nowrap;
         }
 
-        #master-toggle-btn:hover {
-            background: #222;
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
-        }
-
-        /* 按钮激活态（红色警告色） */
         #master-toggle-btn.active {
             border-color: #f44;
             color: #f44;
-            background: rgba(20, 0, 0, 0.9);
+            background: rgba(20, 0, 0, 0.95);
         }
 
-        /* --- 内部元素样式 --- */
+        /* --- 列表元素样式 --- */
         .panel-title {
             font-size: 10px;
             color: #666;
@@ -114,11 +98,10 @@
             text-transform: uppercase;
             border-bottom: 1px solid #444;
             padding-bottom: 4px;
-            letter-spacing: 2px;
             font-weight: bold;
         }
 
-        button {
+        button.mod-btn {
             background: transparent;
             border: 1px solid #222; 
             color: #999;
@@ -127,14 +110,15 @@
             font-size: 10px;
             cursor: pointer;
             text-align: left;
-            transition: all 0.2s;
+            transition: background 0.2s;
+            width: 100%; /* 确保填满容器 */
+            box-sizing: border-box; /* 防止padding撑破 */
         }
 
-        #library button:hover {
+        button.mod-btn:hover {
             border-color: #fff;
             color: #fff;
             background: rgba(255, 255, 255, 0.1);
-            padding-left: 15px;
         }
 
         #random-btn {
@@ -142,99 +126,98 @@
             color: #f44;
             text-align: center;
             margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 11px;
             padding: 10px;
-        }
-        #random-btn:hover {
-            background: #200;
-            color: #fff;
-            border-color: #f00;
+            font-size: 11px;
+            font-weight: bold;
+            width: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+            background: transparent;
         }
 
-        /* 堆栈图层项 */
         .layer-item {
             background: rgba(10, 10, 10, 0.95);
             border: 1px solid #555;
             color: #ddd;
             padding: 8px 10px;
             font-size: 11px;
-            cursor: grab;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            user-select: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            margin-bottom: 2px;
         }
         
-        .layer-item:hover { background: #222; border-color: #fff; }
-        .layer-item:active { cursor: grabbing; }
-        .layer-item.dragging { opacity: 0.5; border: 1px dashed #fff; background: #000; }
-        .layer-item.drag-over { border-top: 2px solid #0f0; }
+        .delete-btn { color: #666; padding: 2px 8px; }
+        .opacity-high { border-left: 3px solid #fff; }
+        .opacity-mid { border-left: 3px solid #aaa; }
+        .opacity-low { border-left: 3px solid #555; }
 
-        .delete-btn { color: #666; cursor: pointer; padding: 2px 6px; font-weight: bold; }
-        .delete-btn:hover { color: #f33; }
+        /* =========================================
+           📱 移动端强力修复 (Mobile Overrides)
+           ========================================= */
+        @media (max-width: 768px) {
+            /* 1. 强制重置容器，取消 desktop 的 flex 布局 */
+            #ui-container {
+                display: block;
+                width: 100%;
+                height: auto;
+                position: static;
+            }
 
-        .opacity-high { border-left: 3px solid #fff; opacity: 1.0; }
-        .opacity-mid { border-left: 3px solid #aaa; opacity: 0.8; }
-        .opacity-low { border-left: 3px solid #555; opacity: 0.6; }
+            /* 2. 主按钮放在底部，方便手指点击 */
+            #master-toggle-btn {
+                bottom: 20px;
+                width: 80%; /* 更宽的按钮 */
+                padding: 15px 0;
+                font-size: 14px;
+                background: #000;
+                box-shadow: 0 0 20px rgba(0,0,0,1); /* 强阴影，防止看不清 */
+            }
 
+            /* 3. 面板改为“固定定位”，脱离文档流，确保绝对显示 */
+            #library, #stack-container {
+                position: fixed;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 85%; /* 占屏幕宽度的 85% */
+                border: 1px solid #666;
+                z-index: 150;
+                
+                /* 默认隐藏状态 */
+                display: none; 
+                opacity: 0;
+            }
+
+            /* 4. 激活状态：强制显示 */
+            body.mobile-active #library {
+                display: flex;
+                opacity: 1;
+                bottom: 80px; /* 在按钮上方 */
+                height: 50vh; /* 占据屏幕一半高度 */
+            }
+
+            body.mobile-active #stack-container {
+                display: flex;
+                opacity: 1;
+                bottom: calc(80px + 50vh + 10px); /* 叠在 library 上方 */
+                height: 20vh; /* 占据较小高度 */
+            }
+
+            /* 5. 增大点击区域，优化触控体验 */
+            button.mod-btn {
+                padding: 15px 10px; /* 更高的按钮 */
+                font-size: 13px; /* 更大的字 */
+                border-bottom: 1px solid #333;
+            }
+            
+            .layer-item {
+                padding: 12px 10px;
+            }
+        }
+        
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #444; }
-
-        /* =========================================
-           📱 Mobile / iPhone Media Query
-           ========================================= */
-        @media (max-width: 768px) {
-            #ui-container {
-                flex-direction: column-reverse; /* 纵向排列 */
-                justify-content: flex-start;
-                align-items: center;
-                left: 0;
-                bottom: 10px; 
-                width: 100%;
-                gap: 10px;
-            }
-
-            /* 移动端主按钮位置调整 */
-            #master-toggle-btn {
-                position: relative; /* 不再绝对定位，而是放入流中 */
-                bottom: auto;
-                left: auto;
-                transform: none;
-                width: 90%;
-                margin-bottom: 5px;
-                padding: 12px;
-                font-size: 12px;
-            }
-
-            /* 移动端默认状态：收起 (模拟 hidden) */
-            #library, #stack-container {
-                width: 90%; 
-                max-height: 0; 
-                overflow: hidden;
-                padding: 0;
-                border: none;
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            /* 移动端激活状态 (通过 .mobile-active 类控制) */
-            body.mobile-active #library, 
-            body.mobile-active #stack-container {
-                max-height: 40vh; 
-                padding: 10px;
-                border: 1px solid #444;
-                opacity: 1;
-                pointer-events: auto;
-                overflow-y: auto;
-            }
-            
-            button { padding: 12px 10px; font-size: 12px; margin-bottom: 2px; }
-            .layer-item { padding: 12px 10px; }
-        }
     </style>
 </head>
 <body>
@@ -246,73 +229,69 @@
             
             <button id="random-btn" onclick="randomizeStack()">[ 🎲 RANDOMIZE_CHAOS ]</button>
             
-            <button onclick="addLayer(0)">01. SWARM</button>
-            <button onclick="addLayer(1)">02. BEAMS</button>
-            <button onclick="addLayer(2)">03. DECAY</button>
-            <button onclick="addLayer(3)">04. GRID</button> 
-            <button onclick="addLayer(4)">05. STRUCTURE</button> 
-            <button onclick="addLayer(5)">06. AURORA</button>
-            <button onclick="addLayer(6)">07. GRID 2</button>
-            <button onclick="addLayer(7)">08. RINGS</button>
-            <button onclick="addLayer(8)">09. DATA</button>
-            <button onclick="addLayer(9)">10. STARFIELD</button>
-            <button onclick="addLayer(10)">11. NEBULA</button>
+            <button class="mod-btn" onclick="addLayer(0)">01. SWARM</button>
+            <button class="mod-btn" onclick="addLayer(1)">02. BEAMS</button>
+            <button class="mod-btn" onclick="addLayer(2)">03. DECAY</button>
+            <button class="mod-btn" onclick="addLayer(3)">04. GRID</button> 
+            <button class="mod-btn" onclick="addLayer(4)">05. STRUCTURE</button> 
+            <button class="mod-btn" onclick="addLayer(5)">06. AURORA</button>
+            <button class="mod-btn" onclick="addLayer(6)">07. GRID 2</button>
+            <button class="mod-btn" onclick="addLayer(7)">08. RINGS</button>
+            <button class="mod-btn" onclick="addLayer(8)">09. DATA</button>
+            <button class="mod-btn" onclick="addLayer(9)">10. STARFIELD</button>
+            <button class="mod-btn" onclick="addLayer(10)">11. NEBULA</button>
             
-            <button onclick="addLayer(11)">12. LATTICE</button> 
-            <button onclick="addLayer(12)">13. SURFACE</button>   
-            <button onclick="addLayer(13)">14. FORCE</button> 
-            <button onclick="addLayer(14)">15. CONTACT</button>  
-            <button onclick="addLayer(15)">16. PRISM</button>
-            <button onclick="addLayer(16)">17. GATE</button>
-            <button onclick="addLayer(17)">18. HEX</button>
-            <button onclick="addLayer(18)">19. LOCK</button>
-            <button onclick="addLayer(19)">20. GLYPH</button>
+            <button class="mod-btn" onclick="addLayer(11)">12. LATTICE</button> 
+            <button class="mod-btn" onclick="addLayer(12)">13. SURFACE</button>   
+            <button class="mod-btn" onclick="addLayer(13)">14. FORCE</button> 
+            <button class="mod-btn" onclick="addLayer(14)">15. CONTACT</button>  
+            <button class="mod-btn" onclick="addLayer(15)">16. PRISM</button>
+            <button class="mod-btn" onclick="addLayer(16)">17. GATE</button>
+            <button class="mod-btn" onclick="addLayer(17)">18. HEX</button>
+            <button class="mod-btn" onclick="addLayer(18)">19. LOCK</button>
+            <button class="mod-btn" onclick="addLayer(19)">20. GLYPH</button>
 
-            <button onclick="addLayer(20)">21. LINES</button>
-            <button onclick="addLayer(21)">22. SHARD</button>
-            <button onclick="addLayer(22)">23. SPATIAL</button>
+            <button class="mod-btn" onclick="addLayer(20)">21. LINES</button>
+            <button class="mod-btn" onclick="addLayer(21)">22. SHARD</button>
+            <button class="mod-btn" onclick="addLayer(22)">23. SPATIAL</button>
             
-            <button onclick="addLayer(23)">24. SILK</button>
-            <button onclick="addLayer(24)">25. MACRO</button>
-            <button onclick="addLayer(25)">26. MESH</button>
+            <button class="mod-btn" onclick="addLayer(23)">24. SILK</button>
+            <button class="mod-btn" onclick="addLayer(24)">25. MACRO</button>
+            <button class="mod-btn" onclick="addLayer(25)">26. MESH</button>
 
-            <button onclick="addLayer(26)">27. SQUARES</button>
-            <button onclick="addLayer(27)">28. SHARP</button>
-            <button onclick="addLayer(28)">29. HEXAGONS</button>
-            <button onclick="addLayer(29)">30. GLACIAL</button>
+            <button class="mod-btn" onclick="addLayer(26)">27. SQUARES</button>
+            <button class="mod-btn" onclick="addLayer(27)">28. SHARP</button>
+            <button class="mod-btn" onclick="addLayer(28)">29. HEXAGONS</button>
+            <button class="mod-btn" onclick="addLayer(29)">30. GLACIAL</button>
 
-            <button onclick="addLayer(30)">31. DATA FLOW</button>
+            <button class="mod-btn" onclick="addLayer(30)">31. DATA FLOW</button>
         </div>
 
         <div id="stack-container">
             <div class="panel-title">/// ACTIVE STACK</div>
-            <div id="stack">
-                </div>
+            <div id="stack"></div>
         </div>
     </div>
     
     <script src="sketch.js"></script>
 
     <script>
-        // 检测是否是移动端
+        // 检测移动端
         const isMobile = window.innerWidth <= 768;
         const btn = document.getElementById('master-toggle-btn');
         const body = document.body;
 
         // 初始化状态
         if (isMobile) {
-            // 移动端默认：收起 (Console Closed)
             btn.innerHTML = "/// OPEN CONSOLE ///";
         } else {
-            // PC端默认：展开 (Console Open)
             btn.innerHTML = "[ - ] HIDE CONSOLE";
         }
 
         function toggleConsole() {
             if (window.innerWidth <= 768) {
-                // === 移动端逻辑 (toggle .mobile-active) ===
+                // 移动端逻辑
                 body.classList.toggle('mobile-active');
-                
                 if (body.classList.contains('mobile-active')) {
                     btn.innerHTML = "[ X ] CLOSE CONSOLE";
                     btn.classList.add('active');
@@ -321,12 +300,11 @@
                     btn.classList.remove('active');
                 }
             } else {
-                // === PC端逻辑 (toggle .ui-hidden) ===
+                // 桌面端逻辑
                 body.classList.toggle('ui-hidden');
-                
                 if (body.classList.contains('ui-hidden')) {
                     btn.innerHTML = "/// OPEN CONSOLE ///";
-                    btn.classList.add('active'); // 隐藏时按钮变红，提示可点开
+                    btn.classList.add('active');
                 } else {
                     btn.innerHTML = "[ - ] HIDE CONSOLE";
                     btn.classList.remove('active');
