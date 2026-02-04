@@ -58,11 +58,11 @@ window.randomizeStack = function() {
 }
 
 window.addLayer = function(modeIndex, skipUI = false) {
-  if (activeLayers.length >= 20) {
-    if(!skipUI) alert("SYSTEM LIMIT REACHED (MAX 20)");
+  // 稍微放宽上限，防止加不进去
+  if (activeLayers.length >= 30) {
+    if(!skipUI) alert("SYSTEM LIMIT REACHED");
     return;
   }
-  
   let newLayer;
   switch(modeIndex) {
     // 基础系列
@@ -86,7 +86,32 @@ window.addLayer = function(modeIndex, skipUI = false) {
     case 16: newLayer = new LayerVoidGate(); break;      
     case 17: newLayer = new LayerVoidHex(); break;       
     case 18: newLayer = new LayerVoidLock(); break;      
-    case 19: newLayer = new LayerVoidGlyph(); break;     
+    case 19: newLayer = new LayerVoidGlyph(); break;
+      
+    // === 新增部分 ===
+    case 20: newLayer = new LayerNeuralLines(); break;   // Processing: shapeType 0
+    case 21: newLayer = new LayerShardTri(); break;      // Processing: shapeType 1
+    case 22: newLayer = new LayerSpatialRect(); break;   // Processing: shapeType 2
+  }
+  
+  if(newLayer) {
+      newLayer.name = getModeName(modeIndex);
+      activeLayers.push(newLayer); 
+      if(!skipUI) updateUI();
+  }
+}
+
+function getModeName(idx) {
+  let names = [
+    "ENTROPIC_SWARM", "DATA_BEAMS", "ORBITAL_DECAY", "NEURAL_GRID", "HYPER_STRUCT", 
+    "DIGI_AURORA", "GRID_RUNNER", "COSMIC_RINGS", "DATA_NEBULA", "DEEP_STARFIELD", "NEBULA_CLUSTER",
+    "NEURAL_LATTICE", "BIO_SURFACE", "FORCE_TENSION", "VOID_CONTACT", 
+    "VOID_PRISM", "VOID_GATE", "VOID_HEX", "VOID_LOCK", "VOID_GLYPH",
+    // === 新增名称 ===
+    "NEURAL_LINES", "SHARD_TRI", "SPATIAL_RECTS"
+  ];
+  return names[idx] || "UNKNOWN_LAYER";
+}
   }
   
   newLayer.name = getModeName(modeIndex);
@@ -424,4 +449,147 @@ function drawGlobalUI() {
   fill(255); noStroke(); textAlign(RIGHT, BOTTOM); textSize(12);
   let info = "ACTIVE_LAYERS: " + activeLayers.length + " // Tao_processing";
   text(info, width-20, height-20);
+}
+
+// ============================================================
+// GEOMETRIC CONSTRUCTIVISM SERIES (New Added)
+// ============================================================
+
+// 21. NEURAL LINES (Based on shapeType 0)
+class LayerNeuralLines {
+  constructor() {
+    this.agents = [];
+    // JS 性能优化：数量设为 120 (原版 1000 跑不动的)
+    for (let i = 0; i < 120; i++) {
+      this.agents.push({
+        pos: createVector(random(width), random(height)),
+        vel: createVector(random(-1.5, 1.5), random(-1.5, 1.5)),
+        r: random(15, 50) // 碰撞边界缓冲
+      });
+    }
+    this.distLimit = 90; // 适当增加距离以补偿数量减少
+  }
+
+  update() {
+    for (let a of this.agents) {
+      a.pos.add(a.vel);
+      // 边界反弹逻辑 (Bouncing)
+      if (a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if (a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+
+  display(alphaMult) {
+    strokeWeight(1);
+    for (let i = 0; i < this.agents.length; i++) {
+      let a = this.agents[i];
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let b = this.agents[j];
+        let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+        if (d < this.distLimit) {
+          // 对应原版 stroke(220, shapeAlpha)
+          stroke(220, 180 * alphaMult); 
+          line(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+        }
+      }
+    }
+  }
+}
+
+// 22. SHARD TRIANGLES (Based on shapeType 1)
+class LayerShardTri {
+  constructor() {
+    this.agents = [];
+    // 数量设为 100
+    for (let i = 0; i < 100; i++) {
+      this.agents.push({
+        pos: createVector(random(width), random(height)),
+        vel: createVector(random(-1.2, 1.2), random(-1.2, 1.2)),
+        r: random(15, 50)
+      });
+    }
+    this.distLimit = 100; 
+  }
+
+  update() {
+    for (let a of this.agents) {
+      a.pos.add(a.vel);
+      if (a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if (a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+
+  display(alphaMult) {
+    noStroke();
+    // 对应原版 fill(220, shapeAlpha) - 三角形透明度低一点
+    fill(220, 60 * alphaMult); 
+    
+    for (let i = 0; i < this.agents.length; i++) {
+      let a = this.agents[i];
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let b = this.agents[j];
+        let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+        
+        if (d < this.distLimit) {
+          // 逻辑移植：找第 k 个邻居 (k = j + 1)
+          // 注意：Processing 里的 k = (j+1) % currentNum 在这里需要用 JS 数组长度处理
+          let k = (j + 1) % this.agents.length;
+          let c = this.agents[k];
+
+          let d2 = dist(b.pos.x, b.pos.y, c.pos.x, c.pos.y);
+          let d3 = dist(a.pos.x, a.pos.y, c.pos.x, c.pos.y);
+
+          // 只有当三个点彼此都足够近时才画三角形
+          if (d2 < this.distLimit && d3 < this.distLimit) {
+            triangle(a.pos.x, a.pos.y, b.pos.x, b.pos.y, c.pos.x, c.pos.y);
+          }
+        }
+      }
+    }
+  }
+}
+
+// 23. SPATIAL RECTS (Based on shapeType 2)
+class LayerSpatialRect {
+  constructor() {
+    this.agents = [];
+    // 矩形面积大，数量设少一点: 70
+    for (let i = 0; i < 70; i++) {
+      this.agents.push({
+        pos: createVector(random(width), random(height)),
+        vel: createVector(random(-1, 1), random(-1, 1)),
+        r: random(15, 50)
+      });
+    }
+    this.distLimit = 120; // 矩形模式通常需要更大的搜索半径
+  }
+
+  update() {
+    for (let a of this.agents) {
+      a.pos.add(a.vel);
+      if (a.pos.x > width - a.r || a.pos.x < a.r) a.vel.x *= -1;
+      if (a.pos.y > height - a.r || a.pos.y < a.r) a.vel.y *= -1;
+    }
+  }
+
+  display(alphaMult) {
+    noStroke();
+    // 对应原版 fill(220, shapeAlpha/2) - 极低透明度
+    fill(220, 30 * alphaMult); 
+    rectMode(CORNERS); // 关键：使用两个点作为对角线坐标
+    
+    for (let i = 0; i < this.agents.length; i++) {
+      let a = this.agents[i];
+      for (let j = i + 1; j < this.agents.length; j++) {
+        let b = this.agents[j];
+        let d = dist(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+        
+        if (d < this.distLimit) {
+          // 用点 a 和点 b 画矩形
+          rect(a.pos.x, a.pos.y, b.pos.x, b.pos.y);
+        }
+      }
+    }
+    rectMode(CENTER); // 恢复全局设置，以免影响其他图层
+  }
 }
