@@ -1,6 +1,6 @@
 // ==========================================
-// Title: COSMIC STACK - VOID PROTOCOL (V2.6)
-// Features: 31 Unique Engines (Including Data Flow)
+// Title: COSMIC STACK - VOID PROTOCOL (V2.9)
+// Features: 32 Unique Engines (Including Draft 3)
 // ==========================================
 
 let activeLayers = []; 
@@ -8,7 +8,7 @@ let font;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  rectMode(CENTER); // 确保多边形和矩形基于中心绘制
+  rectMode(CENTER);
   textFont('Courier New');
   
   // 初始加载：展示新的漂浮数据效果
@@ -50,7 +50,7 @@ window.randomizeStack = function() {
   activeLayers = [];
   let count = floor(random(5, 12)); 
   for(let i=0; i<count; i++) {
-    let rMode = floor(random(0, 31)); // Range extended to 31
+    let rMode = floor(random(0, 32)); // Range extended to 32
     addLayer(rMode, true);
   }
   updateUI();
@@ -99,8 +99,10 @@ window.addLayer = function(modeIndex, skipUI = false) {
     case 27: newLayer = new LayerPolyTri(); break;
     case 28: newLayer = new LayerPolyHex(); break;
     case 29: newLayer = new LayerGlacial(); break;
-    // === 新增：Ryoji Ikeda Data Flow ===
+    // Ryoji Ikeda Data Flow
     case 30: newLayer = new LayerDataFlow(); break;
+    // === 新增：Draft 3 Floating Text ===
+    case 31: newLayer = new LayerDraft3(); break;
   }
   
   if(newLayer) {
@@ -158,8 +160,9 @@ function getModeName(idx) {
     "LINES", "SHARD", "SPATIAL",
     "SILK", "MACRO", "MESH",
     "SQUARES", "SHARP", "HEXAGONS", "GLACIAL",
+    "DATA_FLOW",
     // New
-    "DATA_FLOW"
+    "DRAFT_3"
   ];
   return names[idx] || "UNKNOWN";
 }
@@ -765,7 +768,7 @@ class LayerPolyTri {
 class LayerPolyHex {
   constructor() {
     this.agents = [];
-    for(let i=0; i<120; i++) { // Slightly less agents for heavy hex visual
+    for(let i=0; i<120; i++) { 
        this.agents.push({ pos: createVector(random(width), random(height)), vel: p5.Vector.random2D().mult(1.2), r: random(15, 50) });
     }
     this.distThresh = 70;
@@ -840,40 +843,29 @@ class LayerGlacial {
   }
 }
 
-// ============================================================
-// DATA FLOW SERIES (RYOJI IKEDA STYLE) - New Added
-// ============================================================
-
 // 30. DATA FLOW (RYOJI)
 class LayerDataFlow {
   constructor() {
     this.agents = [];
-    this.totalFrames = 7200; // Cycle length
+    this.totalFrames = 7200; 
     this.gridOffsetY = 0;
     this.gridSpeed = 0.5;
-    
-    // Create fewer agents for web performance (300 instead of 900)
     for (let i = 0; i < 300; i++) {
       this.agents.push(new DataAgent());
     }
   }
 
   update() {
-    // Calculate progress within a loop
     let cycleFrame = frameCount % this.totalFrames;
     let progress = map(cycleFrame, 0, this.totalFrames, 0, 1);
-    
-    // Phase Logic
     let phase = 0;
-    if (progress < 0.25) phase = 0;       // Injection
-    else if (progress < 0.60) phase = 1;  // Tension
-    else if (progress < 0.85) phase = 2;  // Glitch
-    else phase = 3;                       // Residual
+    if (progress < 0.25) phase = 0;       
+    else if (progress < 0.60) phase = 1;  
+    else if (progress < 0.85) phase = 2;  
+    else phase = 3;                       
 
-    // Flowing Grid Logic
     if (progress < 0.85) this.gridOffsetY += this.gridSpeed + (progress * 2);
 
-    // Update Agents
     for (let a of this.agents) {
       a.update(phase, progress);
     }
@@ -886,11 +878,10 @@ class LayerDataFlow {
     let phase = this.currentPhase;
     let progress = this.currentProgress;
 
-    // 1. Draw Flowing Grid
     let bgAlpha = (progress > 0.6) ? 10 : 60;
     fill(0, bgAlpha * alphaMult); 
     noStroke();
-    rect(width/2, height/2, width, height); // Global Dimmer
+    rect(width/2, height/2, width, height); 
 
     stroke(255, 15 * alphaMult); 
     strokeWeight(1);
@@ -902,13 +893,11 @@ class LayerDataFlow {
       line(0, y, width, y);
     }
 
-    // 2. Draw Agents
     for (let a of this.agents) {
       a.display(phase, alphaMult);
       if (phase < 3) this.connectAgents(a, phase, alphaMult);
     }
 
-    // 3. Global Glitch Effect (Flash White)
     if (phase === 2 && random(1) < 0.05) {
        fill(255, 150 * alphaMult);
        noStroke();
@@ -916,7 +905,6 @@ class LayerDataFlow {
        this.gridOffsetY += random(100);
     }
     
-    // 4. UI Text (No Progress Bar)
     fill(255, 255 * alphaMult); noStroke(); textAlign(LEFT, TOP); textSize(12);
     let status = "";
     if (phase === 0) status = "SYSTEM: INITIALIZING (INJECTION)";
@@ -930,7 +918,7 @@ class LayerDataFlow {
 
   connectAgents(a, phase, alphaMult) {
     let scanDist = (phase === 1) ? 80 : 50;
-    if (random(1) < 0.7) return; // Optimization
+    if (random(1) < 0.7) return; 
 
     for (let other of this.agents) {
       if (a === other) continue;
@@ -941,7 +929,6 @@ class LayerDataFlow {
         stroke(255, lineAlpha * a.lifeAlpha * alphaMult);
         strokeWeight(1);
         
-        // Manhattan Lines
         if (random(1) < 0.5) {
           line(a.pos.x, a.pos.y, other.pos.x, a.pos.y);
           line(other.pos.x, a.pos.y, other.pos.x, other.pos.y);
@@ -954,14 +941,13 @@ class LayerDataFlow {
   }
 }
 
-// DataAgent Helper Class
 class DataAgent {
   constructor() {
     this.pos = createVector(random(width), random(height));
     this.targetPos = this.pos.copy();
     this.speed = random(0.05, 0.2);
     this.lifeOffset = random(TWO_PI);
-    this.type = floor(random(3)); // 0=Crosshair, 1=Rect, 2=Dot
+    this.type = floor(random(3)); 
     this.lifeAlpha = 0;
   }
 
@@ -970,20 +956,14 @@ class DataAgent {
     this.lifeAlpha = (sin(frameCount * breathSpeed + this.lifeOffset) + 1) / 2;
     if (phase === 3) this.lifeAlpha *= 0.95;
 
-    // Grid Jump Logic
     if (frameCount % 60 === 0 && this.lifeAlpha < 0.5 && phase < 3) {
       let jumpDist = random(20, 100);
       if (random(1) < 0.5) this.targetPos.x += (random(1)<0.5 ? jumpDist : -jumpDist);
       else this.targetPos.y += (random(1)<0.5 ? jumpDist : -jumpDist);
-      
       this.targetPos.x = constrain(this.targetPos.x, 0, width);
       this.targetPos.y = constrain(this.targetPos.y, 0, height);
     }
-
-    // Lerp Movement
     this.pos.lerp(this.targetPos, this.speed);
-    
-    // Glitch Jitter
     if (phase === 2 && random(1) < 0.1) {
       this.pos.x += random(-5, 5);
     }
@@ -991,11 +971,9 @@ class DataAgent {
 
   display(phase, alphaMult) {
     if (phase === 3 && this.lifeAlpha < 0.01) return;
-
     stroke(255, 255 * this.lifeAlpha * alphaMult);
     noFill();
     strokeWeight(1);
-
     if (this.type === 0) {
       line(this.pos.x - 3, this.pos.y, this.pos.x + 3, this.pos.y);
       line(this.pos.x, this.pos.y - 3, this.pos.x, this.pos.y + 3);
@@ -1004,6 +982,66 @@ class DataAgent {
     } else {
       point(this.pos.x, this.pos.y);
     }
+  }
+}
+
+// ==========================================
+// 31. DRAFT 3 (Floating Text) - NEW ADDED
+// ==========================================
+class LayerDraft3 {
+  constructor() {
+    this.text = 'This week, my project evolved from a static mimicry of Casey Reas into a dynamic "Cosmic Archive" system. Influenced by Ryoji Ikeda’s data aesthetics, I transitioned from drawing simple lines to designing complex "conditional rules." By integrating concepts of "decay" and "reset," I gave digital data a simulated lifespan, moving beyond mere animation into a digital ecosystem. The technical breakthrough was shifting from a traditional creator to a system designer: I developed a modular web stack with 31 unique engines. Through a layer-stacking mechanism, the project now generates over 215 trillion permutations, transforming the viewer from a passive observer into an active co-creator of a unique, fleeting universe.';
+    this.chars = [];
+    this.setupText();
+  }
+  
+  setupText() {
+      this.chars = [];
+      let x = 50;
+      let y = 100;
+      let margin = 50;
+      let maxWidth = width - margin * 2;
+      let fontSize = 16;
+      textSize(fontSize);
+      
+      let words = this.text.split(' ');
+      
+      for (let word of words) {
+          let wWidth = textWidth(word + ' ');
+          if (x + wWidth > width - margin) {
+              x = margin;
+              y += (fontSize * 1.5); // Line height
+          }
+          
+          for (let i = 0; i < word.length; i++) {
+              let c = word.charAt(i);
+              this.chars.push({
+                  char: c,
+                  baseX: x,
+                  baseY: y,
+                  offset: random(TWO_PI) // Random phase for float
+              });
+              x += textWidth(c);
+          }
+          x += textWidth(' ');
+      }
+  }
+
+  update() {
+      // Static text logic (no position update needed)
+  }
+
+  display(alphaMult) {
+      fill(255, 180 * alphaMult); // Semi-transparent text
+      noStroke();
+      textSize(16);
+      textAlign(LEFT, BASELINE);
+      
+      for (let c of this.chars) {
+          // Floating logic: sin wave based on frameCount + offset
+          let floatY = sin(frameCount * 0.05 + c.offset) * 5; 
+          text(c.char, c.baseX, c.baseY + floatY);
+      }
   }
 }
 
