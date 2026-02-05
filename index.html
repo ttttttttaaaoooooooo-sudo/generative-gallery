@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>COSMIC STACK - VOID PROTOCOL V2.8 (Mobile Fix)</title>
+    <title>COSMIC STACK - VOID PROTOCOL V2.9 (Draft 3)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <style>
         /* --- 基础设置 --- */
@@ -13,19 +13,19 @@
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
-            -webkit-user-select: none; /* iOS 防长按选中 */
+            -webkit-user-select: none;
             user-select: none;
-            -webkit-tap-highlight-color: transparent; /* 去除点击高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
         canvas { display: block; }
 
-        /* --- 桌面端布局 (保持原样) --- */
+        /* --- 桌面端布局 --- */
         #ui-container {
             position: absolute;
             bottom: 20px;
             left: 20px;
             width: calc(100% - 40px);
-            height: 0; /* 桌面端依靠 overflow 向上生长 */
+            height: 0;
             z-index: 100;
             display: flex;
             align-items: flex-end;
@@ -64,9 +64,9 @@
             pointer-events: none;
         }
 
-        /* --- 按钮样式 --- */
+        /* --- 主控按钮 --- */
         #master-toggle-btn {
-            position: fixed; /* 改为 fixed 确保始终可见 */
+            position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
@@ -111,8 +111,8 @@
             cursor: pointer;
             text-align: left;
             transition: background 0.2s;
-            width: 100%; /* 确保填满容器 */
-            box-sizing: border-box; /* 防止padding撑破 */
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button.mod-btn:hover {
@@ -152,67 +152,30 @@
         .opacity-mid { border-left: 3px solid #aaa; }
         .opacity-low { border-left: 3px solid #555; }
 
-        /* =========================================
-           📱 移动端强力修复 (Mobile Overrides)
-           ========================================= */
+        /* --- 移动端适配 --- */
         @media (max-width: 768px) {
-            /* 1. 强制重置容器，取消 desktop 的 flex 布局 */
             #ui-container {
-                display: block;
-                width: 100%;
-                height: auto;
-                position: static;
+                display: block; width: 100%; height: auto; position: static;
             }
-
-            /* 2. 主按钮放在底部，方便手指点击 */
             #master-toggle-btn {
-                bottom: 20px;
-                width: 80%; /* 更宽的按钮 */
-                padding: 15px 0;
-                font-size: 14px;
-                background: #000;
-                box-shadow: 0 0 20px rgba(0,0,0,1); /* 强阴影，防止看不清 */
+                bottom: 20px; width: 80%; padding: 15px 0; font-size: 14px;
+                background: #000; box-shadow: 0 0 20px rgba(0,0,0,1);
             }
-
-            /* 3. 面板改为“固定定位”，脱离文档流，确保绝对显示 */
             #library, #stack-container {
-                position: fixed;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 85%; /* 占屏幕宽度的 85% */
-                border: 1px solid #666;
-                z-index: 150;
-                
-                /* 默认隐藏状态 */
-                display: none; 
-                opacity: 0;
+                position: fixed; left: 50%; transform: translateX(-50%);
+                width: 85%; border: 1px solid #666; z-index: 150;
+                display: none; opacity: 0;
             }
-
-            /* 4. 激活状态：强制显示 */
             body.mobile-active #library {
-                display: flex;
-                opacity: 1;
-                bottom: 80px; /* 在按钮上方 */
-                height: 50vh; /* 占据屏幕一半高度 */
+                display: flex; opacity: 1; bottom: 80px; height: 50vh;
             }
-
             body.mobile-active #stack-container {
-                display: flex;
-                opacity: 1;
-                bottom: calc(80px + 50vh + 10px); /* 叠在 library 上方 */
-                height: 20vh; /* 占据较小高度 */
+                display: flex; opacity: 1; bottom: calc(80px + 50vh + 10px); height: 20vh;
             }
-
-            /* 5. 增大点击区域，优化触控体验 */
             button.mod-btn {
-                padding: 15px 10px; /* 更高的按钮 */
-                font-size: 13px; /* 更大的字 */
-                border-bottom: 1px solid #333;
+                padding: 15px 10px; font-size: 13px; border-bottom: 1px solid #333;
             }
-            
-            .layer-item {
-                padding: 12px 10px;
-            }
+            .layer-item { padding: 12px 10px; }
         }
         
         ::-webkit-scrollbar { width: 4px; }
@@ -265,6 +228,7 @@
             <button class="mod-btn" onclick="addLayer(29)">30. GLACIAL</button>
 
             <button class="mod-btn" onclick="addLayer(30)">31. DATA FLOW</button>
+            <button class="mod-btn" onclick="addLayer(31)">32. DRAFT 3</button>
         </div>
 
         <div id="stack-container">
@@ -276,12 +240,10 @@
     <script src="sketch.js"></script>
 
     <script>
-        // 检测移动端
         const isMobile = window.innerWidth <= 768;
         const btn = document.getElementById('master-toggle-btn');
         const body = document.body;
 
-        // 初始化状态
         if (isMobile) {
             btn.innerHTML = "/// OPEN CONSOLE ///";
         } else {
@@ -290,7 +252,6 @@
 
         function toggleConsole() {
             if (window.innerWidth <= 768) {
-                // 移动端逻辑
                 body.classList.toggle('mobile-active');
                 if (body.classList.contains('mobile-active')) {
                     btn.innerHTML = "[ X ] CLOSE CONSOLE";
@@ -300,7 +261,6 @@
                     btn.classList.remove('active');
                 }
             } else {
-                // 桌面端逻辑
                 body.classList.toggle('ui-hidden');
                 if (body.classList.contains('ui-hidden')) {
                     btn.innerHTML = "/// OPEN CONSOLE ///";
